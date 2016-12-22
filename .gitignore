@@ -8,6 +8,7 @@
 .vs
 .vscode
 .idea
+project.lock.json
 docker-compose.prod.yml
 docker-compose.dev.yml
 
