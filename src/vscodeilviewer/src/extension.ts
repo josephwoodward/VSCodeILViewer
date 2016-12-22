@@ -3,6 +3,15 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+function viewIl(filename: string, lineNumber: number) {
+    vscode.window.showInformationMessage('File: ' + filename + ' - Line: ' + lineNumber);
+    let editor = vscode.window.activeTextEditor;
+};
+
+let getServiceUrl = () => {
+    return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
+};
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -14,14 +23,20 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.viewIl', () => {
-        // The code you place here will be executed every time your command is executed
+    let viewIlDisposable = vscode.commands.registerCommand('extension.viewIl', () => {
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Not sure how to do that yet!');
+        let workspace = vscode.workspace;
+        let env = vscode.env;
+
+        let editor = vscode.window.activeTextEditor;
+        let range = editor.revealRange;
+        let doc = editor.document;
+
+        viewIl(editor.document.fileName, 0);
+
     });
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(viewIlDisposable);
 }
 
 // this method is called when your extension is deactivated

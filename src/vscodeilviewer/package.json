@@ -11,13 +11,25 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.viewIl"
+        "onCommand:extension.viewIl",
+        "onCommand:extension.sendToService"
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "configuration": {
+            "properties": {
+                
+            }
+        },
         "commands": [{
             "command": "extension.viewIl",
             "title": "View IL"
+        }],
+        "keybindings": [{
+            "command": "extension.viewIl",
+            "key": "shift+ctrl+v",
+            "mac": "shift+cmd+v",
+            "when": "editorTextFocus && editorLangId == csharp"
         }]
     },
     "scripts": {
