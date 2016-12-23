@@ -11,25 +11,23 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.viewIl"
+        "onCommand:editor.showIlWindow"
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "configuration": {
-            "properties": {
-                
-            }
-        },
         "commands": [{
-            "command": "extension.viewIl",
-            "title": "View IL"
-        },
-        {
-            "command": "editor.printReferences",
+            "command": "editor.showIlWindow",
             "title": "View IL"
         }],
+        "menus": {
+            "editor/context": [{
+                "command": "editor.showIlWindow",
+                "when": "editorHasReferenceProvider",
+                "group": "navigation@1.31"
+            }]
+        },
         "keybindings": [{
-            "command": "extension.viewIl",
+            "command": "extension.showIlWindow",
             "key": "shift+ctrl+v",
             "mac": "shift+cmd+v",
             "when": "editorTextFocus && editorLangId == csharp"
