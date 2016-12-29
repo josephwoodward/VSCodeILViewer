@@ -1,7 +1,7 @@
 using System.IO;
 using Mono.Cecil;
 
-namespace ConsoleApplication
+namespace IlViewer.Core
 {
     public class ILDecompiler {
         public void Decompile(Stream assemblyStream, TextWriter codeWriter) {

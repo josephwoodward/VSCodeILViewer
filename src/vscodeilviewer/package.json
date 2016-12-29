@@ -22,7 +22,7 @@
         "menus": {
             "editor/context": [{
                 "command": "editor.showIlWindow",
-                "when": "editorHasReferenceProvider",
+                "when": "editorTextFocus && editorLangId == csharp",
                 "group": "navigation@1.31"
             }]
         },

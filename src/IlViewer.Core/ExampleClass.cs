@@ -1,12 +1,11 @@
-namespace ConsoleApplication {
-
+namespace IlViewer.Core
+{
     public class ExampleClass
     {
-        public readonly string _name;
+        private readonly string _message;
         public ExampleClass()
         {
-            _name = "John Doe";
+            _message = "Hello World!";
         }
     }
-
 }

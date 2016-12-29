@@ -32,19 +32,18 @@ export function activate(context: vscode.ExtensionContext) {
             return this._onDidChange.event;
         }
 
-        public update(uri: vscode.Uri) {
-            this._onDidChange.fire(uri);
-        }
+        // public update(uri: vscode.Uri) {
+        //     this._onDidChange.fire(uri);   
+        // }
 
         public requstIl() {
-            request('http://google.com', (error, response, body) => {
+            request('http://localhost:5000/api/il/path.dll', (error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     this.response = body;
-                    this.update(previewUri);
+                    this._onDidChange.fire(previewUri);
                 }
             });
         }
-
     }
 
     let provider = new CustomTextDocumentContentProvider();
