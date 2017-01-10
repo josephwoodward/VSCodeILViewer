@@ -7,7 +7,7 @@ namespace IlViewer.Core
 {
     public class RoslynClass
     {
-        public static Dictionary<string, Mono.Collections.Generic.Collection<Instruction>> GetILInstructionsFromAssembly(AssemblyDefinition assembly, string typeFullName)
+        public static Dictionary<string, Mono.Collections.Generic.Collection<Instruction>> GetiLInstructionsFromAssembly(AssemblyDefinition assembly, string typeFullName)
         {
             // Probably need to do this properly, i.e.
             // For each Type inside assembly, in those look for methods, etc

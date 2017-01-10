@@ -18,14 +18,16 @@ export function activate(context: vscode.ExtensionContext) {
 
         public static Scheme = 'il-viewer';
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-        private response = "";
+        private response = null;
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
-            if (this.response === ""){
+            if (!this.response){
                 this.requstIl();
+
+                return "Generating IL, please wait...";
             }
 
-            return this.response === "" ? "Generating IL, please wait..." : this.response;
+            return this.renderPage(this.response);
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -36,13 +38,47 @@ export function activate(context: vscode.ExtensionContext) {
         //     this._onDidChange.fire(uri);   
         // }
 
-        public requstIl() {
-            request('http://localhost:5000/api/il/path.dll', (error, response, body) => {
-                if (!error && response.statusCode == 200) {
-                    this.response = body;
-                    this._onDidChange.fire(previewUri);
-                }
+        private renderPage(body: IInstructionResult[]) : string {
+            let output = "";
+            body.forEach(function(value: IInstructionResult, index: number){
+                output += "<div><pre>" + value.value + "</pre></div>";
             });
+
+            return `
+            <style type="text/css">
+                .outOfDateBanner {
+                    display: table;
+                    background-color: red;
+                }
+
+                .outOfDateBanner span {
+                    display: table-cell;
+                }
+            </style>
+            <body>
+            <div class="outOfDateBanner">
+            <span>This file is now out of date</span>
+            <span>Refresh</span>
+            </div>
+            ${output}
+            </body>`;
+        }
+
+        public requstIl() {
+
+            let data = {
+                ProjectFilePath : "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json",
+                Filename : "Program"
+            }
+
+            setTimeout(() => {
+                request({ url: 'http://localhost:5000/api/il/', json: true, form: data, method: "POST" }, (error, response, body) => {
+                    if (!error && response.statusCode == 200) {
+                        this.response = JSON.parse(body);
+                        this._onDidChange.fire(previewUri);
+                    }
+                });
+            }, 1000)
         }
     }
 
