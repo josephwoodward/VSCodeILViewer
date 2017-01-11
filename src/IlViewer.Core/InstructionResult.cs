@@ -2,8 +2,8 @@ namespace IlViewer.Core
 {
     public class InstructionResult
     {
-        public string IlOpCode { get; set; }
-        public string IlOperand { get ;set; }
+	    /*public string IlOpCode => "";
+	    public string IlOperand => "";*/
         public string Value { get; set;}
     }
 }

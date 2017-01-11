@@ -24,10 +24,12 @@ export function activate(context: vscode.ExtensionContext) {
             if (!this.response){
                 this.requstIl();
 
-                return "Generating IL, please wait...";
+                return "Generating IL, hold onto your seat belts!";
             }
 
-            return this.renderPage(this.response);
+            let output = this.renderPage(this.response);
+            this.response = null;
+            return output;
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -41,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
         private renderPage(body: IInstructionResult[]) : string {
             let output = "";
             body.forEach(function(value: IInstructionResult, index: number){
-                output += "<div><pre>" + value.value + "</pre></div>";
+                output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
             });
 
             return `
@@ -56,25 +58,28 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             </style>
             <body>
-            <div class="outOfDateBanner">
-            <span>This file is now out of date</span>
-            <span>Refresh</span>
-            </div>
             ${output}
             </body>`;
         }
 
         public requstIl() {
 
-            let data = {
+            let postData = {
                 ProjectFilePath : "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json",
                 Filename : "Program"
             }
 
+            let options = {
+                method: 'post',
+                body: postData,
+                json: true,
+                url: 'http://localhost:5000/api/il/'
+            }
+
             setTimeout(() => {
-                request({ url: 'http://localhost:5000/api/il/', json: true, form: data, method: "POST" }, (error, response, body) => {
+                request(options, (error, response, body) => {
                     if (!error && response.statusCode == 200) {
-                        this.response = JSON.parse(body);
+                        this.response = body;
                         this._onDidChange.fire(previewUri);
                     }
                 });

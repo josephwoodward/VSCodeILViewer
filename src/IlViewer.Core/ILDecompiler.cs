@@ -3,7 +3,7 @@ using Mono.Cecil;
 
 namespace IlViewer.Core
 {
-    public class ILDecompiler {
+    public class IlDecompiler {
         public void Decompile(Stream assemblyStream, TextWriter codeWriter) {
             var assembly = AssemblyDefinition.ReadAssembly(assemblyStream);
 

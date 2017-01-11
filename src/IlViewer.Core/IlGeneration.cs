@@ -99,13 +99,13 @@ namespace IlViewer.Core
 	        var allClasses = lens.SourceFiles;
             
             UpdateFileReferences(lens.FileReferences);
-            UpdateSourceFiles(lens.SourceFiles);
+            //UpdateSourceFiles(lens.SourceFiles);
 
 	        var projectFile = ProjectReader.GetProject(filePath);
 
             ProjectContext context = new ProjectContextBuilder()
                 .WithProject(projectFile)
-                .WithTargetFramework(NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetCoreApp10)
+                .WithTargetFramework(FrameworkConstants.CommonFrameworks.NetCoreApp10)
                 .Build();
 
             Microsoft.CodeAnalysis.Workspace workspace = context.CreateRoslynWorkspace();
