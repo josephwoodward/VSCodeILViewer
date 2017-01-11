@@ -20,6 +20,8 @@ namespace IlViewer.Core
 
             Compilation compilation = LoadWorkspace(projectJsonPath);
 
+	        AssemblyIdentity res = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name == classFilename);
+
 	        SyntaxTree systenTree = compilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains(classFilename));
 	        string sourceCode = systenTree.GetText().ToString();
 
