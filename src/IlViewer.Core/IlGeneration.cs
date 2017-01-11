@@ -5,12 +5,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.ProjectModel;
+using Microsoft.DotNet.ProjectModel.Compilation;
+using Microsoft.DotNet.ProjectModel.Graph;
 using Microsoft.DotNet.ProjectModel.Workspaces;
+using NuGet.Frameworks;
 using Project = Microsoft.CodeAnalysis.Project;
 
 namespace IlViewer.Core
@@ -27,8 +31,8 @@ namespace IlViewer.Core
 
             var workspace = LoadWorkspace(projectJsonPath);
 
+	        var totals = workspace.CurrentSolution.Projects.ToList();
 	        Project project = workspace.CurrentSolution.Projects.FirstOrDefault();
-
 
 	        var refer = project.AllProjectReferences.ToList();
 
@@ -55,9 +59,49 @@ namespace IlViewer.Core
 	        return res;
         }
 
+        public static void UpdateFileReferences(IEnumerable<string> sourceFiles)
+        {
+            foreach(var file in sourceFiles){
+                using (var stream = File.OpenRead(file))
+                {
+                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+                    var metadata = AssemblyMetadata.Create(moduleMetadata);
+                    var metadataRef = metadata.GetReference();
+                }
+            }
+            
+        }
+
+        public static void UpdateSourceFiles(IEnumerable<string> sourceFiles)
+        {
+            sourceFiles = sourceFiles.Where(filename => Path.GetExtension(filename) == ".cs");
+            foreach(var file in sourceFiles){
+                using (var stream = File.OpenRead(file))
+                {
+                    var moduleMetadata = ModuleMetadata.CreateFromStream(stream, PEStreamOptions.PrefetchMetadata);
+
+                    var metadata = AssemblyMetadata.Create(moduleMetadata);
+                    var metadataRef = metadata.GetReference();
+                }
+            }
+            
+        }
         public static Microsoft.CodeAnalysis.Workspace LoadWorkspace(string filePath)
         {
-            var projectFile = ProjectReader.GetProject(filePath);
+	        ProjectContext res = ProjectContext.Create(filePath, NuGetFramework.AgnosticFramework);
+
+	        var res2 = GetProjectReferences(res);
+
+	        ProjectContextLens lens = new ProjectContextLens(res, "Debug");
+
+	        var fileRef = lens.FileReferences;
+	        var projRef = lens.ProjectReferences;
+	        var allClasses = lens.SourceFiles;
+            
+            UpdateFileReferences(lens.FileReferences);
+            UpdateSourceFiles(lens.SourceFiles);
+
+	        var projectFile = ProjectReader.GetProject(filePath);
 
             ProjectContext context = new ProjectContextBuilder()
                 .WithProject(projectFile)
@@ -135,5 +179,29 @@ if (!emitResult.Success)
 
             return output;
         }
+
+	    private static IEnumerable<ProjectDescription> GetProjectReferences(ProjectContext context)
+	    {
+		    var projectDescriptions = context.LibraryManager
+			    .GetLibraries()
+			    .Where(lib => lib.Identity.Type == LibraryType.Project)
+			    .OfType<ProjectDescription>();
+
+		    foreach (var description in projectDescriptions)
+		    {
+			    if (description.Identity.Name == context.ProjectFile.Name)
+			    {
+				    continue;
+			    }
+
+			    // if this is an assembly reference then don't treat it as project reference
+			    if (!string.IsNullOrEmpty(description.TargetFrameworkInfo?.AssemblyPath))
+			    {
+				    continue;
+			    }
+
+			    yield return description;
+		    }
+	    }
     }
 }
