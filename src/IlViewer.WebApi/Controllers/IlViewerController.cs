@@ -11,10 +11,13 @@ namespace IlViewer.WebApi.Controllers
 		[HttpPost]
 		public IList<InstructionResult> Post([FromBody] IlRequest request)
 		{
-			//string assemblyPath = "/Users/josephwoodward/Dev/VsCodeIlViewer/src/IlViewer.WebApi/bin/Debug/netcoreapp1.0/IlViewer.Core.dll";
-			//AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
+			if (string.IsNullOrEmpty(request.Filename))
+				return new List<InstructionResult>();
 
-			IList<InstructionResult> result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
+			if (string.IsNullOrEmpty(request.ProjectFilePath))
+				return new List<InstructionResult>();
+
+ 			var result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
 
 			return result;
 		}

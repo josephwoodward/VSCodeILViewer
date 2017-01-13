@@ -20,12 +20,13 @@ namespace IlViewer.Core
 
             Compilation compilation = LoadWorkspace(projectJsonPath);
 
-	        AssemblyIdentity res = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name == classFilename);
+	        /*AssemblyIdentity assemblyIdentity = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name.Contains("Program"));*/
 
-	        SyntaxTree systenTree = compilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains(classFilename));
-	        string sourceCode = systenTree.GetText().ToString();
+	        var syntaxTree = compilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains(classFilename));
 
-	        IList<InstructionResult> instructionResults = CompileInMemory(sourceCode, compilation.References.ToList());
+	        var sourceCode = syntaxTree.GetText().ToString();
+
+	        var instructionResults = CompileInMemory(sourceCode, compilation.References.ToList(), classFilename);
 	        return instructionResults;
         }
 
@@ -38,10 +39,9 @@ namespace IlViewer.Core
             return compilation;
         }
 
-        private static IList<InstructionResult> CompileInMemory(string sourceCode, IList<MetadataReference> metadataReferences)
+        private static IList<InstructionResult> CompileInMemory(string sourceCode, IList<MetadataReference> metadataReferences, string classFilename)
         {
             var sourceLanguage = new CSharpLanguage();
-
             var syntaxTree = sourceLanguage.ParseText(sourceCode, SourceCodeKind.Regular);
 
 	        var stream = new MemoryStream();
@@ -53,7 +53,6 @@ namespace IlViewer.Core
             var emitResult = compilation.Emit(stream);
 			if (!emitResult.Success)
 			{
-
 				foreach (var diagnostic in emitResult.Diagnostics)
 				{
 					Debug.WriteLine(diagnostic.ToString());
@@ -68,10 +67,10 @@ namespace IlViewer.Core
             //var decompiler = new ILDecompiler();
             //decompiler.Decompile(stream, resultWriter);
 
-	        return GenerateIlFromStream(stream, "ConsoleApplication.Program", metadataReferences);
+	        return GenerateIlFromStream(stream, classFilename);
         }
 
-        private static IList<InstructionResult> GenerateIlFromStream(Stream stream, string typeFullName, IList<MetadataReference> metadataReferences)
+        private static IList<InstructionResult> GenerateIlFromStream(Stream stream, string typeFullName)
         {
             var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
 

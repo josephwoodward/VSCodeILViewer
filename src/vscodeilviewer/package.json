@@ -45,6 +45,10 @@
         "mocha": "^2.3.3",
         "request": "2.79.0",
         "@types/node": "^6.0.40",
+        "omnisharp-client": "5.2.0",
         "@types/mocha": "^2.2.32"
+    },
+    "dependencies": {
+        "find-parent-dir": "^0.3.0"
     }
 }

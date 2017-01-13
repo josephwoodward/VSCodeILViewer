@@ -1,94 +1,53 @@
 'use strict';
 
+import { IntermediateLanguageContentProvider } from './IntermediateLanguageContentProvider';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as os from 'os';
 
 var request = require('request');
+var parentfinder = require('find-parent-dir');
 
 let getServiceUrl = () => {
     return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
 };
 
+
+
 export function activate(context: vscode.ExtensionContext) {
 
+    let res = vscode.workspace.textDocuments;
     let previewUri = vscode.Uri.parse('il-viewer://authority/il-output');
 
-    class CustomTextDocumentContentProvider implements vscode.TextDocumentContentProvider {
+    // let edit = vscode.Location;
+    // vscode.workspace.findFiles("**/project.json","").then((x) => {
+    //     x.forEach((y) => {
+    //         y.fsPath;
+    //     });
+    // });
 
-        public static Scheme = 'il-viewer';
-        private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
-        private response = null;
+    let document = vscode.window.activeTextEditor.document;
+    let fileName = path.parse(document.fileName);
+    let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
+    
+    let root = vscode.workspace.rootPath;
+    let projectJson;
+    vscode.workspace.findFiles("**/project.json","").then((uri) => {
+        uri.forEach((x) => {
+            projectJson = x.fsPath;
 
-        public provideTextDocumentContent(uri: vscode.Uri): string {
-            if (!this.response){
-                this.requstIl();
-
-                return "Generating IL, hold onto your seat belts!";
+            if (projectJson == projectPath) {
+                // let provider = new IntermediateLanguageContentProvider(previewUri, fileName.name, projectPath);
+                // let registration = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
+                // context.subscriptions.push(registration);
             }
+            
+        });
+    });
 
-            let output = this.renderPage(this.response);
-            this.response = null;
-            return output;
-        }
-
-        get onDidChange(): vscode.Event<vscode.Uri> {
-            return this._onDidChange.event;
-        }
-
-        // public update(uri: vscode.Uri) {
-        //     this._onDidChange.fire(uri);   
-        // }
-
-        private renderPage(body: IInstructionResult[]) : string {
-            let output = "";
-            body.forEach(function(value: IInstructionResult, index: number){
-                output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
-            });
-
-            return `
-            <style type="text/css">
-                .outOfDateBanner {
-                    display: table;
-                    background-color: red;
-                }
-
-                .outOfDateBanner span {
-                    display: table-cell;
-                }
-            </style>
-            <body>
-            ${output}
-            </body>`;
-        }
-
-        public requstIl() {
-
-            let postData = {
-                ProjectFilePath : "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json",
-                Filename : "Program"
-            }
-
-            let options = {
-                method: 'post',
-                body: postData,
-                json: true,
-                url: 'http://localhost:5000/api/il/'
-            }
-
-            setTimeout(() => {
-                request(options, (error, response, body) => {
-                    if (!error && response.statusCode == 200) {
-                        this.response = body;
-                        this._onDidChange.fire(previewUri);
-                    }
-                });
-            }, 1000)
-        }
-    }
-
-    let provider = new CustomTextDocumentContentProvider();
-    let registration = vscode.workspace.registerTextDocumentContentProvider(CustomTextDocumentContentProvider.Scheme, provider);
+    let provider = new IntermediateLanguageContentProvider(previewUri, fileName.name, projectPath);
+    let registration = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
 
     let disposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', previewUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
@@ -102,8 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// // The debug options for the server
 	// let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 
-
-    context.subscriptions.push(registration, disposable);
+    context.subscriptions.push(disposable, registration);
 }
 
 export function deactivate() {}

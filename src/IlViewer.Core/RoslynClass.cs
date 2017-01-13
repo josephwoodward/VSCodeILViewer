@@ -13,7 +13,7 @@ namespace IlViewer.Core
             // For each Type inside assembly, in those look for methods, etc
             // Also look for the methods at the top level, etc!!
             var ilInstructions = new Dictionary<string, Mono.Collections.Generic.Collection<Instruction>>();
-            var script = assembly.MainModule.GetTypes().FirstOrDefault(x => x.FullName == typeFullName);
+	        var script = assembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == typeFullName.Replace(".cs", string.Empty));
 
             if (script != null)
             {
