@@ -4,26 +4,32 @@ import * as os from 'os';
 
 var request = require('request');
 
+let parsePath = () => {
+    let document = vscode.window.activeTextEditor.document;
+    let parsedPath = path.parse(document.fileName);
+    return parsedPath;
+}
+
 export class IntermediateLanguageContentProvider implements vscode.TextDocumentContentProvider {
 
         public static Scheme = 'il-viewer';
 
         private _response = null;
         private _previewUri;
-        private _parsedPath : path.ParsedPath;
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 
-        constructor(previewUri : vscode.Uri, parsedPath : path.ParsedPath) {
+        constructor(previewUri : vscode.Uri,) {
             this._previewUri = previewUri;
-            this._parsedPath = parsedPath;
         }
 
         // Implementation
         public provideTextDocumentContent(uri: vscode.Uri) : string {
             
+            //let parsedPath = parsePath();
+
             if (!this._response){
-                this.findProjectJson((projectJson) => {
-                    return this.requstIl(this._parsedPath.name, projectJson);
+                this.findProjectJson((projectJson, filename) => {
+                    return this.requstIl(projectJson, filename);
                 })
                 
                 return "Generating IL, hold onto your seat belts!";
@@ -40,14 +46,20 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
         }
 
         private findProjectJson(requestIntermediateLanguage){
-            let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
-            vscode.workspace.findFiles("**/project.json","").then((uri) => {
-                uri.forEach((x) => {
-                    var projectJson = x.fsPath;
-                    if (projectJson == projectPath) {
-                        requestIntermediateLanguage(projectJson);
+            const parsedPath = parsePath();
+            const filename = parsedPath.name;
+
+            vscode.workspace.findFiles("**/project.json","").then((uris) => {
+
+                const directory = parsedPath.dir;
+                uris.forEach((uri) => {
+                    var projectJson = uri.fsPath;    
+                    if (projectJson.includes(directory)){
+                        requestIntermediateLanguage(parsedPath.name, projectJson);
+                        return;
                     }
                 });
+
             });
         }
 
@@ -87,13 +99,11 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
                 url: 'http://localhost:5000/api/il/'
             }
 
-            setTimeout(() => {
-                request(options, (error, response, body) => {
-                    if (!error && response.statusCode == 200) {
-                        this._response = body;
-                        this._onDidChange.fire(this._previewUri);
-                    }
-                });
-            }, 500)
+            request(options, (error, response, body) => {
+                if (!error && response.statusCode == 200) {
+                    this._response = body;
+                    this._onDidChange.fire(this._previewUri);
+                }
+            });
         }
     }

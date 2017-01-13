@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using IlViewer.Core;
 using System.Collections.Generic;
 using IlViewer.WebApi.Models;
@@ -11,13 +12,10 @@ namespace IlViewer.WebApi.Controllers
 		[HttpPost]
 		public IList<InstructionResult> Post([FromBody] IlRequest request)
 		{
-			if (string.IsNullOrEmpty(request.Filename))
-				return new List<InstructionResult>();
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
 
-			if (string.IsNullOrEmpty(request.ProjectFilePath))
-				return new List<InstructionResult>();
-
- 			var result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
+			var result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
 
 			return result;
 		}

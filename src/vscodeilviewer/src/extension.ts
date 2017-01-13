@@ -28,14 +28,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     let res = vscode.workspace.textDocuments;
 
-    let document = vscode.window.activeTextEditor.document;
-    let parsedPath = path.parse(document.fileName);
-    let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
     
+    //let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
     let root = vscode.workspace.rootPath;
-    let projectJson;
     
-    let provider = new IntermediateLanguageContentProvider(previewUri, parsedPath);
+    
+    let provider = new IntermediateLanguageContentProvider(previewUri);
     let disposable2 = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
     registerDisposable(disposable2);
 

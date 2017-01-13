@@ -13,7 +13,7 @@ namespace IlViewer.Core
         public static IList<InstructionResult> ExtractIl(string projectJsonPath, string classFilename)
         {
             if (string.IsNullOrEmpty(projectJsonPath))
-                throw new ArgumentNullException(nameof(projectJsonPath));           
+                throw new ArgumentNullException(nameof(projectJsonPath));
 
             if (string.IsNullOrEmpty(classFilename))
                throw new ArgumentNullException(nameof(classFilename));
