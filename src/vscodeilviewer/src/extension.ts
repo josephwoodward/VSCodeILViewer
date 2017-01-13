@@ -7,35 +7,28 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 var request = require('request');
-var parentfinder = require('find-parent-dir');
+
+let previewUri = vscode.Uri.parse('il-viewer://authority/' + IntermediateLanguageContentProvider.Scheme);
 
 let getServiceUrl = () => {
     return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
 };
 
-let previewUri = vscode.Uri.parse('il-viewer://authority/il-output');
-
 export function activate(context: vscode.ExtensionContext) {
 
-    let disposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
+    // let res = vscode.workspace.textDocuments;
+
+    let invokationDisposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', previewUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
         }, (reason) => {
             vscode.window.showErrorMessage(reason);
         });
     });
-    registerDisposable(disposable);
-    
+    registerDisposable(invokationDisposable);    
 
-    let res = vscode.workspace.textDocuments;
-
-    
-    //let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
-    let root = vscode.workspace.rootPath;
-    
-    
     let provider = new IntermediateLanguageContentProvider(previewUri);
-    let disposable2 = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
-    registerDisposable(disposable2);
+    let providerDisposable = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
+    registerDisposable(providerDisposable);
 
     // var res = path.join('server', 'out', 'serverMain.js');
 	// let serverModule = context.asAbsolutePath(res);
@@ -43,9 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 
     function registerDisposable(d : vscode.Disposable){
-        // disposables.forEach((d) => {
-        //     context.subscriptions.push(d);
-        // })
         context.subscriptions.push(d);
     }
 }

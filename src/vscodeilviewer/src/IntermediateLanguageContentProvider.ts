@@ -14,7 +14,7 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
         public static Scheme = 'il-viewer';
 
-        private _response = null;
+        private _response;
         private _previewUri;
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 
@@ -24,10 +24,9 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
         // Implementation
         public provideTextDocumentContent(uri: vscode.Uri) : string {
-            
-            //let parsedPath = parsePath();
 
             if (!this._response){
+                // TODO: this code is a bit messy, consider a promise
                 this.findProjectJson((projectJson, filename) => {
                     return this.requstIl(projectJson, filename);
                 })
