@@ -13,6 +13,8 @@ let getServiceUrl = () => {
     return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
 };
 
+let previewUri = vscode.Uri.parse('il-viewer://authority/il-output');
+
 export function activate(context: vscode.ExtensionContext) {
 
     let disposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
@@ -25,33 +27,17 @@ export function activate(context: vscode.ExtensionContext) {
     
 
     let res = vscode.workspace.textDocuments;
+
     let document = vscode.window.activeTextEditor.document;
-    let fileName = path.parse(document.fileName);
+    let parsedPath = path.parse(document.fileName);
     let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
     
     let root = vscode.workspace.rootPath;
     let projectJson;
-    let previewUri = vscode.Uri.parse('il-viewer://authority/il-output');
-    vscode.workspace.findFiles("**/project.json","").then((uri) => {
-
-        let provider = new IntermediateLanguageContentProvider(previewUri, fileName.name, projectPath);
-        let disposable = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
-        registerDisposable(disposable);
-
-        uri.forEach((x) => {
-            projectJson = x.fsPath;
-
-            if (projectJson == projectPath) {
-                // let provider = new IntermediateLanguageContentProvider(previewUri, fileName.name, projectPath);
-                // let registration = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
-                // context.subscriptions.push(registration); 
-            }
-            
-        });
-    });
-
-    let provider = new IntermediateLanguageContentProvider(previewUri, fileName.name, projectPath);
-    let registration = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
+    
+    let provider = new IntermediateLanguageContentProvider(previewUri, parsedPath);
+    let disposable2 = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
+    registerDisposable(disposable2);
 
     // var res = path.join('server', 'out', 'serverMain.js');
 	// let serverModule = context.asAbsolutePath(res);
@@ -59,6 +45,9 @@ export function activate(context: vscode.ExtensionContext) {
 	// let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 
     function registerDisposable(d : vscode.Disposable){
+        // disposables.forEach((d) => {
+        //     context.subscriptions.push(d);
+        // })
         context.subscriptions.push(d);
     }
 }

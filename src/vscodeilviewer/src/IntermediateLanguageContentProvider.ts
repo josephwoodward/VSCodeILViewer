@@ -10,20 +10,22 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
         private _response = null;
         private _previewUri;
-        private _filename;
-        private _projectJsonPath;
+        private _parsedPath : path.ParsedPath;
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 
-        constructor(previewUri : vscode.Uri, filename: string, projectJsonPath) {
+        constructor(previewUri : vscode.Uri, parsedPath : path.ParsedPath) {
             this._previewUri = previewUri;
-            this._filename = filename;
-            this._projectJsonPath = projectJsonPath;
+            this._parsedPath = parsedPath;
         }
 
+        // Implementation
         public provideTextDocumentContent(uri: vscode.Uri) : string {
-
+            
             if (!this._response){
-                this.requstIl(this._filename, this._projectJsonPath);
+                this.findProjectJson((projectJson) => {
+                    return this.requstIl(this._parsedPath.name, projectJson);
+                })
+                
                 return "Generating IL, hold onto your seat belts!";
             }
 
@@ -35,6 +37,18 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
         get onDidChange(): vscode.Event<vscode.Uri> {
             return this._onDidChange.event;
+        }
+
+        private findProjectJson(requestIntermediateLanguage){
+            let projectPath = "/Users/josephwoodward/Dev/VsCodeIlViewerDemoProj/console/project.json";
+            vscode.workspace.findFiles("**/project.json","").then((uri) => {
+                uri.forEach((x) => {
+                    var projectJson = x.fsPath;
+                    if (projectJson == projectPath) {
+                        requestIntermediateLanguage(projectJson);
+                    }
+                });
+            });
         }
 
         private renderPage(body: IInstructionResult[]) : string {
