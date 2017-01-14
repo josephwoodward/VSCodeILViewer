@@ -104,5 +104,9 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
                     this._onDidChange.fire(this._previewUri);
                 }
             });
+
+            // setTimeout(() => {
+                
+            // }, 200)
         }
     }
