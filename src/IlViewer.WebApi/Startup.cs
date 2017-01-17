@@ -1,3 +1,6 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,11 +13,9 @@ namespace IlViewer.WebApi
     {
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
+	        var builder = new ConfigurationBuilder()
+		        .SetBasePath(env.ContentRootPath);
+		        /*.AddCommandLine(Environment.GetCommandLineArgs().Skip(1).ToArray());*/
             Configuration = builder.Build();
         }
 
@@ -23,7 +24,11 @@ namespace IlViewer.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
+	        /*Console.WriteLine("Port: " + Configuration.GetSection("server:port"));
+	        Console.WriteLine("Port2: " + Configuration["server:urls"]);
+	        Console.WriteLine("Port3: " + Configuration["server__urls"]);
+	        Console.WriteLine("Port3: " + Configuration["server.urls"]);*/
+	        // Add framework services.
             services.AddMvc();
         }
 

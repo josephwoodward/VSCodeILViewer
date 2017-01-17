@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -8,17 +10,17 @@ namespace IlViewer.WebApi
     {
         public static void Main(string[] args)
         {
+	        //Console.WriteLine("Arg" + args[1]);
             var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+                //.AddCommandLine(Environment.GetCommandLineArgs().Skip(1).ToArray())
                 .Build();
             
-            var host = new WebHostBuilder()
+	        var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
-                .Build();
+	            .Build();
 
             host.Run();
         }

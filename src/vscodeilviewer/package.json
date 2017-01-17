@@ -1,17 +1,23 @@
 {
     "name": "vscodeilviewer",
-    "displayName": "VsCodeIlViewer",
-    "description": "IL Viewer for Visual Studio Code",
+    "displayName": "IL Viewer",
+    "description": "An IL Viewer for Visual Studio Code",
     "version": "0.0.1",
-    "publisher": "JosephWoodward",
+    "author": "Joseph Woodward",
+    "license": "See licence in license file",
+    "publisher": "josephwoodward",
     "engines": {
         "vscode": "^1.5.0"
     },
     "categories": [
+        "Languages",
         "Other"
     ],
+    "repository": "https://github.com/JosephWoodward/VSCodeILViewer",
     "activationEvents": [
-        "onCommand:editor.showIlWindow"
+        "onCommand:editor.showIlWindow",
+        "onLanguage:csharp",
+        "workspaceContains:project.json"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -25,13 +31,7 @@
                 "when": "editorTextFocus && editorLangId == csharp",
                 "group": "navigation@1.31"
             }]
-        },
-        "keybindings": [{
-            "command": "extension.showIlWindow",
-            "key": "shift+ctrl+v",
-            "mac": "shift+cmd+v",
-            "when": "editorTextFocus && editorLangId == csharp"
-        }]
+        }
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
@@ -47,8 +47,5 @@
         "@types/node": "^6.0.40",
         "omnisharp-client": "5.2.0",
         "@types/mocha": "^2.2.32"
-    },
-    "dependencies": {
-        "find-parent-dir": "^0.3.0"
     }
 }

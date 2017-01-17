@@ -19,5 +19,11 @@ namespace IlViewer.WebApi.Controllers
 
 			return result;
 		}
+
+		[HttpGet]
+		public string Ping()
+		{
+			return "pong";
+		}
 	}
 }

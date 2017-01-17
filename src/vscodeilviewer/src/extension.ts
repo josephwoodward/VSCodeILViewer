@@ -10,7 +10,7 @@ import * as os from 'os';
 
 const request = require('request');
 const events = require('events');
-
+let child : child_process.ChildProcess;
 
 let ilWindowUri = vscode.Uri.parse(`il-viewer://authority/${IntermediateLanguageContentProvider.Scheme}`);
 
@@ -36,38 +36,61 @@ export function activate(context: vscode.ExtensionContext) {
     let providerDisposable = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
     disposables.push(providerDisposable);
 
-    let child = DecompilerProcess.spawn("/Users/josephwoodward/Dev/VsCodeIlViewer/src/IlViewer.WebApi/bin/Debug/netcoreapp1.0/IlViewer.Core.dll", [ "--debug" ]);
-    child.on('error', data => {
-        console.log(`Child error: ${data}`);
+    const fullPath = path.join(vscode.extensions.getExtension("josephwoodward.vscodeilviewer").extensionPath) + "/server/ilViewer.WebApi.dll";
+    fs.exists(fullPath, function(exists){
+        if (!exists){
+            vscode.window.showErrorMessage("Unable to start IL Viewer server");
+            return;
+        }
+        
+        startServer(fullPath);
     });
-
-    //child.kill()
-
-    
-
-    // child.stdout.on('data', data => {
-    //     var res = data.toString();
-    // });
-
-    // child.stdout.on('data', data => {
-    //     var res = data.toString();
-    //     process.stdout.write(data);
-    // });
-
-    // child.stdout.push("Hello!")
-
-    // process.stdin.on('data', data => {
-    //     var res = data.toString();
-    //     child.stdin.write(data); 
-    // });
-
-    let platform = process.platform;
-    // var res = path.join('server', 'out', 'serverMain.js');
-	// let serverModule = context.asAbsolutePath(res);
-	// // The debug options for the server
-	// let debugOptions = { execArgv: ["--nolazy", "--debug=6004"] };
 
     context.subscriptions.push(...disposables);
 }
 
-export function deactivate() {}
+export function deactivate() {
+    child.kill('SIGTERM');
+}
+
+export function startServer(path: string){
+
+    child = DecompilerProcess.spawn(path, [ ]);
+    child.on('error', data => {
+        console.log(`Child error: ${data}`);
+    });
+
+    let out = child.stdout;
+    out.on("readable", function(){
+        let data = child.stdout.read();
+    });
+
+    process.on('SIGTERM', () => {
+        child.kill();
+        process.exit(0); 
+    });
+
+    process.on('SIGHUP', () => {
+        child.kill();
+        process.exit(0); 
+    });
+
+    child.on('close', code => {
+        console.log(code);
+        if (code !== 0) {
+            var data = code.toString();
+        } else {
+            var data = code.toString();
+        }
+    });
+
+    child.stdout.on('data', data => {
+        var res = data.toString();
+        process.stdout.write(data);
+    });
+
+    process.stdin.on('data', data => {
+        var res = data.toString();
+        child.stdin.write(data); 
+    });
+}

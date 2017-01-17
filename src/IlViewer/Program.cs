@@ -11,7 +11,7 @@ namespace IlViewer
     {
         public static void Main(string[] args)
         {
-	        var argsList = new List<string>(args);
+	        /*var argsList = new List<string>(args);
 	        if (argsList.Contains("--debug"))
 	        {
 		        argsList.Remove("--debug");
@@ -24,12 +24,15 @@ namespace IlViewer
 		        {
 			        Thread.Sleep(100);
 		        }
-	        }
+	        }*/
+
+	        Thread.Sleep(3000);
+	        //Console.WriteLine("8 seconds later...");
 
 	        using (var stdin = Console.OpenStandardInput())
 	        using (var stdout = Console.OpenStandardOutput())
 	        {
-		        Console.WriteLine(stdin.ToString());
+		        Console.WriteLine("Hello World");
 
 		        var buffer = new byte[2048];
 		        int bytes;
