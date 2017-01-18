@@ -22,9 +22,7 @@ const disposables: vscode.Disposable[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
 
-    // let res = vscode.workspace.textDocuments;
-    
-    let invokationDisposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
+    let invokationDisposable = vscode.commands.registerCommand('extension.showIlWindow', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', ilWindowUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
         }, (reason) => {
             vscode.window.showErrorMessage(reason);

@@ -95,7 +95,7 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
                 method: 'post',
                 body: postData,
                 json: true,
-                url: 'http://localhost:5000/api/il/'
+                url: 'http://localhost:65530/api/il/'
             }
 
             request(options, (error, response, body) => {
@@ -104,9 +104,5 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
                     this._onDidChange.fire(this._previewUri);
                 }
             });
-
-            // setTimeout(() => {
-                
-            // }, 200)
         }
     }

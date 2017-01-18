@@ -15,19 +15,18 @@
     ],
     "repository": "https://github.com/JosephWoodward/VSCodeILViewer",
     "activationEvents": [
-        "onCommand:editor.showIlWindow",
         "onLanguage:csharp",
         "workspaceContains:project.json"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [{
-            "command": "editor.showIlWindow",
-            "title": "View IL"
+            "command": "extension.showIlWindow",
+            "title": "Inspect Intermediate Language"
         }],
         "menus": {
             "editor/context": [{
-                "command": "editor.showIlWindow",
+                "command": "extension.showIlWindow",
                 "when": "editorTextFocus && editorLangId == csharp",
                 "group": "navigation@1.31"
             }]

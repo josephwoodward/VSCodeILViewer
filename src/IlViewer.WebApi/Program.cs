@@ -20,6 +20,7 @@ namespace IlViewer.WebApi
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
+                .UseUrls("http://localhost:65530")
 	            .Build();
 
             host.Run();
