@@ -10,21 +10,16 @@ import * as os from 'os';
 
 const request = require('request');
 const events = require('events');
+
 let child : child_process.ChildProcess;
-
 let ilWindowUri = vscode.Uri.parse(`il-viewer://authority/${IntermediateLanguageContentProvider.Scheme}`);
-
-let getServiceUrl = () => {
-    return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
-};
 
 const disposables: vscode.Disposable[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
-
+    console.log("Invoked");
     // let res = vscode.workspace.textDocuments;
-    
-    let invokationDisposable = vscode.commands.registerCommand('editor.showIlWindow', () => {
+    let invokationDisposable = vscode.commands.registerCommand('extension.viewIntermediateLanguage', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', ilWindowUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
         }, (reason) => {
             vscode.window.showErrorMessage(reason);

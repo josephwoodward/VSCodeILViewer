@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -20,6 +18,7 @@ namespace IlViewer.WebApi
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
+				.UseUrls("http://localhost:65530")
 	            .Build();
 
             host.Run();

@@ -1,11 +1,19 @@
 {
     "name": "vscodeilviewer",
     "displayName": "IL Viewer",
-    "description": "An IL Viewer for Visual Studio Code",
+    "description": "An IL Viewer for C# in Visual Studio Code",
     "version": "0.0.1",
     "author": "Joseph Woodward",
     "license": "See licence in license file",
     "publisher": "josephwoodward",
+    "galleryBanner": {
+		"color": "#5c2d91",
+		"theme": "dark"
+	},
+    "bugs": {
+		"url": "https://github.com/Microsoft/vscode-extension-samples/issues",
+		"email": ""
+	},
     "engines": {
         "vscode": "^1.5.0"
     },
@@ -13,21 +21,24 @@
         "Languages",
         "Other"
     ],
-    "repository": "https://github.com/JosephWoodward/VSCodeILViewer",
+    "repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples.git"
+	},
+    "homepage": "https://github.com/Microsoft/vscode-extension-samples/tree/master/textdocumentprovider-sample/README.md",
     "activationEvents": [
-        "onCommand:editor.showIlWindow",
-        "onLanguage:csharp",
-        "workspaceContains:project.json"
+        "onCommand:extension.viewIntermediateLanguage"
+        
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [{
-            "command": "editor.showIlWindow",
-            "title": "View IL"
+            "command": "extension.viewIntermediateLanguage",
+            "title": "Inspect Intermediate Language"
         }],
         "menus": {
             "editor/context": [{
-                "command": "editor.showIlWindow",
+                "command": "extension.showIlWindow",
                 "when": "editorTextFocus && editorLangId == csharp",
                 "group": "navigation@1.31"
             }]
