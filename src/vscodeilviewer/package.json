@@ -9,14 +9,26 @@
     "engines": {
         "vscode": "^1.5.0"
     },
+    "icon": "logo.png",
+    "galleryBanner": {
+		"color": "#05644e",
+		"theme": "dark"
+	},
+    "bugs": {
+		"url": "https://github.com/JosephWoodward/VSCodeILViewer/issues",
+		"email": "joseph.woodward@xeuse.com"
+	},
     "categories": [
         "Languages",
         "Other"
     ],
-    "repository": "https://github.com/JosephWoodward/VSCodeILViewer",
+    "repository": {
+		"type": "git",
+		"url": "https://github.com/JosephWoodward/VSCodeILViewer.git"
+	},
+    "homepage": "https://github.com/JosephWoodward/VSCodeILViewer/blob/master/README.md",
     "activationEvents": [
-        "onLanguage:csharp",
-        "workspaceContains:project.json"
+        "onCommand:extension.showIlWindow"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -42,9 +54,10 @@
         "typescript": "^2.0.3",
         "vscode": "^1.0.0",
         "mocha": "^2.3.3",
-        "request": "2.79.0",
         "@types/node": "^6.0.40",
-        "omnisharp-client": "5.2.0",
         "@types/mocha": "^2.2.32"
+    },
+    "dependencies": {
+        "request": "2.79.0"
     }
 }

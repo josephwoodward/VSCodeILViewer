@@ -8,24 +8,18 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 
-const request = require('request');
-const events = require('events');
 let child : child_process.ChildProcess;
-
 let ilWindowUri = vscode.Uri.parse(`il-viewer://authority/${IntermediateLanguageContentProvider.Scheme}`);
-
-let getServiceUrl = () => {
-    return vscode.workspace.getConfiguration("ilViewer")["serviceUrl"];
-};
 
 const disposables: vscode.Disposable[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
+    console.log("Executing activate");
 
     let invokationDisposable = vscode.commands.registerCommand('extension.showIlWindow', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', ilWindowUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
         }, (reason) => {
-            vscode.window.showErrorMessage(reason);
+            vscode.window.showErrorMessage("There's been an error: " + reason);
         });
     });
     disposables.push(invokationDisposable);
@@ -41,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         
-        startServer(fullPath);
+        //startServer(fullPath);
     });
 
     context.subscriptions.push(...disposables);

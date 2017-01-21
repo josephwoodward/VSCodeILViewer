@@ -1,8 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as os from 'os';
-
-var request = require('request');
+import * as request from 'request';
 
 let parsePath = () => {
     let document = vscode.window.activeTextEditor.document;
@@ -52,8 +51,9 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
                 const directory = parsedPath.dir;
                 uris.forEach((uri) => {
-                    var projectJson = uri.fsPath;    
-                    if (projectJson.includes(directory)){
+                    let pos = uri.fsPath.indexOf("/project.json");
+                    let projectJson = uri.fsPath.substring(0, pos);
+                    if (directory.includes(projectJson)){
                         requestIntermediateLanguage(parsedPath.name, projectJson);
                         return;
                     }
