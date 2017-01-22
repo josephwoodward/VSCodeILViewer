@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ProjectModel.Workspaces;
+using Mono.Cecil;
 
 namespace IlViewer.Core
 {
@@ -20,21 +21,45 @@ namespace IlViewer.Core
 
             Compilation compilation = LoadWorkspace(projectJsonPath);
 
-	        /*AssemblyIdentity assemblyIdentity = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name.Contains("Program"));*/
+            var stream = new MemoryStream();
+            var comp = compilation.Emit(stream);
+            if (!comp.Success)
+            {
+                foreach (var diagnostic in comp.Diagnostics)
+                {
+                    Debug.WriteLine(diagnostic.ToString());
+                }
+
+                throw new ArgumentException("Something broke - check output for errors");
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+            //AssemblyDefinition assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
+            var ref2 = MetadataReference.CreateFromStream(stream);
+
+            /*var types = compilation.Assembly.TypeNames.ToList();
+            var types2 = compilation.ReferencedAssemblyNames.Select(x => x.Name).ToList();*/
+
+
+            //AssemblyIdentity assemblyIdentity = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name.Contains("Startup"));
 
 	        var syntaxTree = compilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains(classFilename));
 
 	        var sourceCode = syntaxTree.GetText().ToString();
 
-	        var instructionResults = CompileInMemory(sourceCode, compilation.References.ToList(), classFilename);
+            var metadataReferences = compilation.References.ToList();
+            metadataReferences.Add(ref2);
+
+            var instructionResults = CompileInMemory(sourceCode, metadataReferences, classFilename);
 	        return instructionResults;
         }
 
         private static Compilation LoadWorkspace(string filePath)
         {
 	        var projectWorkspace = new ProjectJsonWorkspace(filePath);
+            var res = projectWorkspace.CurrentSolution.Projects;
 
-	        var compilation = projectWorkspace.CurrentSolution.Projects.FirstOrDefault().GetCompilationAsync().Result;
+            var compilation = projectWorkspace.CurrentSolution.Projects.FirstOrDefault().GetCompilationAsync().Result;
 
             return compilation;
         }
@@ -48,6 +73,7 @@ namespace IlViewer.Core
 	        Compilation compilation = sourceLanguage
 	            .CreateLibraryCompilation("ExampleAssembly", false)
 	            .AddReferences(metadataReferences)
+            .AddReferences()
 	            .AddSyntaxTrees(syntaxTree);
 
             var emitResult = compilation.Emit(stream);

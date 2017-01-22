@@ -12,6 +12,8 @@ namespace IlViewer.WebApi.Controllers
 		[HttpPost]
 		public IList<InstructionResult> Post([FromBody] IlRequest request)
 		{
+		    Console.WriteLine("ProjectFilePath: " + request.ProjectFilePath);
+		    Console.WriteLine("Filename: " + request.Filename);
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
 

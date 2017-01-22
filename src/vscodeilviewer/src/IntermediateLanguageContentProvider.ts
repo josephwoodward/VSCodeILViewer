@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as request from 'request';
+import * as findParentDir from 'find-parent-dir';
 
 let parsePath = () => {
     let document = vscode.window.activeTextEditor.document;
@@ -47,19 +48,37 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             const parsedPath = parsePath();
             const filename = parsedPath.name;
 
-            vscode.workspace.findFiles("**/project.json","").then((uris) => {
+            findParentDir(parsedPath.dir, 'project.json', function (err, dir) {
+                console.log(dir);
+                if (dir !== null){
+                    requestIntermediateLanguage(parsedPath.name, dir);
+                }
 
-                const directory = parsedPath.dir;
-                uris.forEach((uri) => {
-                    let pos = uri.fsPath.indexOf("/project.json");
-                    let projectJson = uri.fsPath.substring(0, pos);
-                    if (directory.includes(projectJson)){
-                        requestIntermediateLanguage(parsedPath.name, projectJson);
-                        return;
-                    }
-                });
+            })
 
-            });
+//             vscode.workspace.findFiles("**/project.json","").then((uris) => {
+
+//                 const directory = parsedPath.dir;
+//                 uris.forEach((uri) => {
+
+
+// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference/project.json
+// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference.Domain/Infrastructure
+// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference.Client/
+
+
+//                     let pos = uri.fsPath.indexOf("/project.json");
+//                     let projectJson = uri.fsPath.substring(0, pos);
+
+//                     var remainder = directory.replace(projectJson, "");
+                    
+//                     if (remainder[0]=== "/"){
+//                         requestIntermediateLanguage(parsedPath.name, projectJson);
+//                         return;
+//                     }
+//                 });
+
+//             });
         }
 
         private renderPage(body: IInstructionResult[]) : string {

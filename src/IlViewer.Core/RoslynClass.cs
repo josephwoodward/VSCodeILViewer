@@ -7,13 +7,14 @@ namespace IlViewer.Core
 {
     public class RoslynClass
     {
-        public static Dictionary<string, Mono.Collections.Generic.Collection<Instruction>> GetiLInstructionsFromAssembly(AssemblyDefinition assembly, string typeFullName)
+        public static Dictionary<string, Mono.Collections.Generic.Collection<Instruction>> GetiLInstructionsFromAssembly(AssemblyDefinition assembly, string typeName)
         {
             // Probably need to do this properly, i.e.
             // For each Type inside assembly, in those look for methods, etc
             // Also look for the methods at the top level, etc!!
             var ilInstructions = new Dictionary<string, Mono.Collections.Generic.Collection<Instruction>>();
-	        var script = assembly.MainModule.GetTypes().FirstOrDefault(x => x.Name == typeFullName.Replace(".cs", string.Empty));
+            var allTypes = assembly.MainModule.GetTypes().ToList();
+            var script = allTypes.FirstOrDefault(x => x.Name == typeName);
 
             if (script != null)
             {

@@ -58,6 +58,7 @@
         "@types/mocha": "^2.2.32"
     },
     "dependencies": {
-        "request": "2.79.0"
+        "request": "2.79.0",
+        "find-parent-dir": "0.3.0"
     }
 }
