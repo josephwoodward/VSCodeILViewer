@@ -26,7 +26,6 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
         public provideTextDocumentContent(uri: vscode.Uri) : string {
 
             if (!this._response){
-                // TODO: this code is a bit messy, consider a promise
                 this.findProjectJson((projectJson, filename) => {
                     return this.requstIl(projectJson, filename);
                 })
@@ -49,36 +48,11 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             const filename = parsedPath.name;
 
             findParentDir(parsedPath.dir, 'project.json', function (err, dir) {
-                console.log(dir);
                 if (dir !== null){
                     requestIntermediateLanguage(parsedPath.name, dir);
+                    return;
                 }
-
             })
-
-//             vscode.workspace.findFiles("**/project.json","").then((uris) => {
-
-//                 const directory = parsedPath.dir;
-//                 uris.forEach((uri) => {
-
-
-// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference/project.json
-// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference.Domain/Infrastructure
-// //ConsumerCommunicationPreference/src/JE.Api.ConsumerCommPreference.Client/
-
-
-//                     let pos = uri.fsPath.indexOf("/project.json");
-//                     let projectJson = uri.fsPath.substring(0, pos);
-
-//                     var remainder = directory.replace(projectJson, "");
-                    
-//                     if (remainder[0]=== "/"){
-//                         requestIntermediateLanguage(parsedPath.name, projectJson);
-//                         return;
-//                     }
-//                 });
-
-//             });
         }
 
         private renderPage(body: IInstructionResult[]) : string {
