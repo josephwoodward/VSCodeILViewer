@@ -11,6 +11,8 @@ Using the power of Roslyn, IL Viewer compiles your chosen file in memory (along 
 
 Simply open a .cs file which you'd like to inspect, right-click and select `Inspect IL`.
 
+![Easy IL inspection](./featureimages/demo.gif)
+
 More features coming soon.
 
 
@@ -22,7 +24,7 @@ Currently only works on .NET Core apps using project.json. Support for .csproj i
 
 - In order to refresh IL output you need to close the split pane and request IL again.
 - Delay in first de-compilation start up, this will be improved soon.
-- 
+- Project.json support only (.csproj coming soon)
 
 ## Release Notes
 
