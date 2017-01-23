@@ -9,30 +9,27 @@ namespace IlViewer.Core
     {
         public static Dictionary<string, Mono.Collections.Generic.Collection<Instruction>> GetiLInstructionsFromAssembly(AssemblyDefinition assembly, string typeName)
         {
-            // Probably need to do this properly, i.e.
-            // For each Type inside assembly, in those look for methods, etc
-            // Also look for the methods at the top level, etc!!
             var ilInstructions = new Dictionary<string, Mono.Collections.Generic.Collection<Instruction>>();
-            var allTypes = assembly.MainModule.GetTypes().ToList();
-            var script = allTypes.FirstOrDefault(x => x.Name == typeName);
+            var typeDefinitions = assembly.MainModule.GetTypes().ToList();
 
-            if (script != null)
+            TypeDefinition typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
+            if (typeDefinition != null)
             {
-                foreach (var method in script.Methods)
+                foreach (var method in typeDefinition.Methods)
                 {
                     ilInstructions.Add(method.FullName, method.Body.Instructions);
                 }
 
-                foreach (var type in script.NestedTypes)
+                foreach (var nestedType in typeDefinition.NestedTypes)
                 {
-                    foreach (var method in type.Methods)
+                    foreach (var method in nestedType.Methods)
                     {
                         ilInstructions.Add(method.FullName, method.Body.Instructions);
                     }
 
-                    foreach (var nestedType in type.NestedTypes)
+                    foreach (var nestedNestedType in nestedType.NestedTypes)
                     {
-                        foreach (var method in nestedType.Methods)
+                        foreach (var method in nestedNestedType.Methods)
                         {
                             ilInstructions.Add(method.FullName, method.Body.Instructions);
                         }

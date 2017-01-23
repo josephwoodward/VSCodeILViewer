@@ -28,13 +28,14 @@
 	},
     "homepage": "https://github.com/JosephWoodward/VSCodeILViewer/blob/master/README.md",
     "activationEvents": [
-        "onCommand:extension.showIlWindow"
+        "onLanguage:csharp",
+        "workspaceContains:project.json"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [{
             "command": "extension.showIlWindow",
-            "title": "Inspect Intermediate Language"
+            "title": "Inspect IL"
         }],
         "menus": {
             "editor/context": [{
