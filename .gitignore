@@ -6,7 +6,6 @@
 *.user
 *.sln.docstates
 .vs
-.vscode
 .idea
 project.lock.json
 docker-compose.prod.yml
