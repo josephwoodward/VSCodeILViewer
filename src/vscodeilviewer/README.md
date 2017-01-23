@@ -11,7 +11,7 @@ Using the power of Roslyn, IL Viewer compiles your chosen file in memory (along 
 
 Simply open a .cs file which you'd like to inspect, right-click and select `Inspect IL`.
 
-![Easy IL inspection](./featureimages/demo.gif)
+![Easy IL inspection](https://raw.githubusercontent.com/JosephWoodward/VSCodeILViewer/master/images/demo.gif)
 
 More features coming soon.
 

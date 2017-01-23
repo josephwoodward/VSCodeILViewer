@@ -1,7 +1,7 @@
 {
     "name": "vscodeilviewer",
-    "displayName": "IL Viewer",
-    "description": "An IL Viewer for Visual Studio Code",
+    "displayName": "C# IL Viewer",
+    "description": "A C# IL Viewer for Visual Studio Code",
     "version": "0.0.1",
     "author": "Joseph Woodward",
     "license": "See licence in license file",

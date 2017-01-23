@@ -11,36 +11,45 @@ namespace IlViewer.Core
         {
             var ilInstructions = new Dictionary<string, Mono.Collections.Generic.Collection<Instruction>>();
             var typeDefinitions = assembly.MainModule.GetTypes().ToList();
+            //var typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName);
 
-            TypeDefinition typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
-            if (typeDefinition != null)
+            /*if (typeDefinition == null)
             {
-                foreach (var method in typeDefinition.Methods)
-                {
-                    ilInstructions.Add(method.FullName, method.Body.Instructions);
-                }
+                // Could be generic type?
+                typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
+            }*/
 
-                foreach (var nestedType in typeDefinition.NestedTypes)
+            foreach (TypeDefinition typeDefinition in typeDefinitions)
+            {
+                if (typeDefinition != null)
                 {
-                    foreach (var method in nestedType.Methods)
+                    foreach (var method in typeDefinition.Methods)
                     {
                         ilInstructions.Add(method.FullName, method.Body.Instructions);
                     }
 
-                    foreach (var nestedNestedType in nestedType.NestedTypes)
+                    foreach (var nestedType in typeDefinition.NestedTypes)
                     {
-                        foreach (var method in nestedNestedType.Methods)
+                        foreach (var method in nestedType.Methods)
                         {
                             ilInstructions.Add(method.FullName, method.Body.Instructions);
                         }
+
+                        foreach (var nestedNestedType in nestedType.NestedTypes)
+                        {
+                            foreach (var method in nestedNestedType.Methods)
+                            {
+                                ilInstructions.Add(method.FullName, method.Body.Instructions);
+                            }
+                        }
                     }
                 }
-            }
-            else
-            {
-                var ilProcessor = assembly.MainModule.EntryPoint.Body.GetILProcessor();
-                var res5 = ilProcessor.Body.Instructions;
-                ilInstructions.Add(assembly.MainModule.EntryPoint.FullName, ilProcessor.Body.Instructions);
+                else
+                {
+                    var ilProcessor = assembly.MainModule.EntryPoint.Body.GetILProcessor();
+                    var res5 = ilProcessor.Body.Instructions;
+                    ilInstructions.Add(assembly.MainModule.EntryPoint.FullName, ilProcessor.Body.Instructions);
+                }
             }
 
             return ilInstructions;
