@@ -2,6 +2,7 @@
 
 import { IntermediateLanguageContentProvider } from './IntermediateLanguageContentProvider';
 import { DecompilerProcess } from './process';
+import { Logger } from './logger';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
@@ -10,11 +11,12 @@ import * as os from 'os';
 
 let child : child_process.ChildProcess;
 let ilWindowUri = vscode.Uri.parse(`il-viewer://authority/${IntermediateLanguageContentProvider.Scheme}`);
+let logger = new Logger(message => console.log(message), "Info");
 
 const disposables: vscode.Disposable[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log("Executing activate");
+    logger.append("Executing activate");
 
     let invokationDisposable = vscode.commands.registerCommand('extension.showIlWindow', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', ilWindowUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
@@ -31,7 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
     const fullPath = path.join(vscode.extensions.getExtension("josephwoodward.vscodeilviewer").extensionPath) + "/server/ilViewer.WebApi.dll";
     fs.exists(fullPath, function(exists){
         if (!exists){
-            vscode.window.showErrorMessage("Unable to start IL Viewer server");
+            logger.appendLine(`Unable to start server, can't find path at ${fullPath}`);
+            vscode.window.showErrorMessage("Unable to start IL Viewer server, check developer console");
             return;
         }
         
@@ -47,8 +50,9 @@ export function deactivate() {
 
 export function startServer(path: string){
 
-    child = DecompilerProcess.spawn(path, [ ]);
+    child = DecompilerProcess.spawn(path, [ ], logger);
     child.on('error', data => {
+        logger.appendLine(`Error starting server: ${data}`);
         console.log(`Child error: ${data}`);
     });
 
@@ -68,16 +72,18 @@ export function startServer(path: string){
     });
 
     child.on('close', code => {
-        console.log(code);
-        if (code !== 0) {
-            var data = code.toString();
-        } else {
-            var data = code.toString();
-        }
+        // if (code !== 0) {
+        //     var data = code.toString();
+        // } else {
+        //     var data = code.toString();
+        // }
+        let data = (code != null) ? code.toString() : "unknown";
+        logger.appendLine(`Closing server: ${data}`);
     });
 
     child.stdout.on('data', data => {
-        var res = data.toString();
+        let response = data.toString();
+        logger.appendLine(`Server output: ${response}`)
         process.stdout.write(data);
     });
 

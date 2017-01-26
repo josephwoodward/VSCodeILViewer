@@ -30,7 +30,9 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
                     return this.requstIl(projectJson, filename);
                 })
                 
-                return "Generating IL, hold onto your seat belts!";
+                return `
+                <p>Inspecting IL, hold onto your seat belts!<p>
+                <p>If this is your first inspection then it may take a moment longer.</p>`;
             }
 
             let output = this.renderPage(this._response);
@@ -55,11 +57,20 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             })
         }
 
-        private renderPage(body: IInstructionResult[]) : string {
+        private renderPage(body: IInspectionResult) : string {
             let output = "";
-            body.forEach(function(value: IInstructionResult, index: number){
-                output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
-            });
+            if (body.hasErrors){
+                output += "<p>Unable to extract IL for the following reason(s):</p>";
+                output += "<ol>";
+                body.compilationErrors.forEach(function(value : ICompilationError, index: number){
+                    output += "<li style=\"margin-bottom: 10px;\">" + value.message + "</li>";
+                });
+                output += "</ol>";
+            } else {
+                body.ilResults.forEach(function(value: IInstructionResult, index: number){
+                    output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
+                });
+            }
 
             return `
             <style type="text/css">
@@ -94,6 +105,12 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             request(options, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     this._response = body;
+                    this._onDidChange.fire(this._previewUri);
+                } else if (!error && response.statusCode == 500) {
+                    // Something went wrong!
+                    this._response = `
+                    <p>Uh oh, something went wrong.</p>
+                    <p>${body}</p>`;
                     this._onDidChange.fire(this._previewUri);
                 }
             });

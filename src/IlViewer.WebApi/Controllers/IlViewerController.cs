@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using IlViewer.Core;
-using System.Collections.Generic;
+using IlViewer.Core.ResultOutput;
 using IlViewer.WebApi.Models;
 
 namespace IlViewer.WebApi.Controllers
@@ -10,16 +10,23 @@ namespace IlViewer.WebApi.Controllers
 	public class IlViewerController : Controller
 	{
 		[HttpPost]
-		public IList<InstructionResult> Post([FromBody] IlRequest request)
+		public InspectionResult Post([FromBody] IlRequest request)
 		{
-		    Console.WriteLine("ProjectFilePath: " + request.ProjectFilePath);
-		    Console.WriteLine("Filename: " + request.Filename);
+		    Console.WriteLine($"Request Params: ProjectFilePath {request.ProjectFilePath}");
+		    Console.WriteLine($"Request Params: Filename: {request.Filename}");
+
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
-
-			var result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
-
-			return result;
+		    try
+		    {
+		        InspectionResult result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
+		        return result;
+		    }
+		    catch (Exception e)
+		    {
+		        Console.WriteLine(e);
+		        throw;
+		    }
 		}
 
 		[HttpGet]

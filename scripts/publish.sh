@@ -6,4 +6,3 @@ dotnet publish ../src/IlViewer -c debug --output "../src/vscodeilviewer/server/"
 rm src/vscodeilviewer/vscodeilviewer-*.vsix
 
 cd src/vscodeilviewer/
-vsce package

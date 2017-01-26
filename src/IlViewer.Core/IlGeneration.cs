@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using IlViewer.Core.ResultOutput;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ProjectModel.Workspaces;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 
 namespace IlViewer.Core
 {
     public static class IlGeneration
     {
-        public static IList<InstructionResult> ExtractIl(string projectJsonPath, string classFilename)
+        public static InspectionResult ExtractIl(string projectJsonPath, string classFilename)
         {
             if (string.IsNullOrEmpty(projectJsonPath))
                 throw new ArgumentNullException(nameof(projectJsonPath));
@@ -19,52 +20,45 @@ namespace IlViewer.Core
             if (string.IsNullOrEmpty(classFilename))
                throw new ArgumentNullException(nameof(classFilename));
 
-            Compilation compilation = LoadWorkspace(projectJsonPath);
+            Compilation workspaceCompilation = WorkspaceManager.LoadWorkspace(projectJsonPath);
 
-            var stream = new MemoryStream();
-            var comp = compilation.Emit(stream);
-            if (!comp.Success)
+            var inspectionResult = new InspectionResult();
+            using (var stream = new MemoryStream())
             {
-                foreach (var diagnostic in comp.Diagnostics)
+                var compilationResult = workspaceCompilation.Emit(stream);
+                if (!compilationResult.Success)
                 {
-                    Debug.WriteLine(diagnostic.ToString());
+                    var errors = compilationResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+                    foreach (var error in errors)
+                    {
+                        inspectionResult.AddError(error.GetMessage());
+                        Console.WriteLine(error.ToString());
+                    }
+
+                    if (inspectionResult.HasErrors)
+                        return inspectionResult;
                 }
 
-                throw new ArgumentException("Something broke - check output for errors");
+                stream.Seek(0, SeekOrigin.Begin);
+
+                //AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(stream);
+                PortableExecutableReference ref2 = MetadataReference.CreateFromStream(stream);
+
+                var syntaxTree2 = workspaceCompilation.SyntaxTrees.Where(x => x.FilePath.Contains(classFilename));
+                var syntaxTree = workspaceCompilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains("/" + classFilename + ".cs"));
+
+                var sourceCode = syntaxTree.GetText().ToString();
+
+                var metadataReferences = workspaceCompilation.References.ToList();
+                var res3 = ref2.GetMetadata();
+                metadataReferences.Add(ref2);
+
+                InspectionResult finalResult = CompileInMemory(sourceCode, metadataReferences, classFilename, inspectionResult);
+                return finalResult;
             }
-
-            stream.Seek(0, SeekOrigin.Begin);
-            //AssemblyDefinition assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
-            var ref2 = MetadataReference.CreateFromStream(stream);
-
-            /*var types = compilation.Assembly.TypeNames.ToList();
-            var types2 = compilation.ReferencedAssemblyNames.Select(x => x.Name).ToList();*/
-
-
-            //AssemblyIdentity assemblyIdentity = compilation.ReferencedAssemblyNames.FirstOrDefault(x => x.Name.Contains("Startup"));
-
-	        var syntaxTree = compilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains(classFilename));
-
-	        var sourceCode = syntaxTree.GetText().ToString();
-
-            var metadataReferences = compilation.References.ToList();
-            metadataReferences.Add(ref2);
-
-            var instructionResults = CompileInMemory(sourceCode, metadataReferences, classFilename);
-	        return instructionResults;
         }
 
-        private static Compilation LoadWorkspace(string filePath)
-        {
-	        var projectWorkspace = new ProjectJsonWorkspace(filePath);
-            var res = projectWorkspace.CurrentSolution.Projects;
-
-            var compilation = projectWorkspace.CurrentSolution.Projects.FirstOrDefault().GetCompilationAsync().Result;
-
-            return compilation;
-        }
-
-        private static IList<InstructionResult> CompileInMemory(string sourceCode, IList<MetadataReference> metadataReferences, string classFilename)
+        private static InspectionResult CompileInMemory(string sourceCode, IEnumerable<MetadataReference> metadataReferences, string classFilename, InspectionResult inspectionResult)
         {
             var sourceLanguage = new CSharpLanguage();
             var syntaxTree = sourceLanguage.ParseText(sourceCode, SourceCodeKind.Regular);
@@ -73,18 +67,21 @@ namespace IlViewer.Core
 	        Compilation compilation = sourceLanguage
 	            .CreateLibraryCompilation("ExampleAssembly", false)
 	            .AddReferences(metadataReferences)
-            .AddReferences()
+                .AddReferences()
 	            .AddSyntaxTrees(syntaxTree);
 
             var emitResult = compilation.Emit(stream);
 			if (!emitResult.Success)
 			{
-				foreach (var diagnostic in emitResult.Diagnostics)
+			    var errors = emitResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error);
+			    foreach (var error in errors)
 				{
-					Debug.WriteLine(diagnostic.ToString());
+				    inspectionResult.AddError(error.GetMessage());
+				    Console.WriteLine(error.ToString());
 				}
 
-				throw new ArgumentException("Something broke - check output for errors");
+			    if (inspectionResult.HasErrors)
+			        return inspectionResult;
 			}
             
             stream.Seek(0, SeekOrigin.Begin);
@@ -93,14 +90,27 @@ namespace IlViewer.Core
             //var decompiler = new ILDecompiler();
             //decompiler.Decompile(stream, resultWriter);
 
-	        return GenerateIlFromStream(stream, classFilename);
+            var ilResult = GenerateIlFromStream(stream, classFilename);
+            inspectionResult.IlResults = ilResult;
+
+            return inspectionResult;
         }
 
         private static IList<InstructionResult> GenerateIlFromStream(Stream stream, string typeFullName)
         {
-            var assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(stream);
+            var assembly = AssemblyDefinition.ReadAssembly(stream);
 
-	        var result = RoslynClass.GetiLInstructionsFromAssembly(assembly, typeFullName);
+            Dictionary<string, Collection<Instruction>> result;
+            try
+            {
+                 result = RoslynClass.GetiLInstructionsFromAssembly(assembly, typeFullName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
 
             var output = new List<InstructionResult>();
             foreach(var item in result)
