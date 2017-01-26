@@ -52,8 +52,8 @@ export function startServer(path: string){
 
     child = DecompilerProcess.spawn(path, [ ], logger);
     child.on('error', data => {
-        logger.appendLine(`Error starting server: ${data}`);
-        console.log(`Child error: ${data}`);
+        logger.appendLine("Error starting server");
+        console.log(`Child error`);
     });
 
     let out = child.stdout;
@@ -77,12 +77,12 @@ export function startServer(path: string){
         // } else {
         //     var data = code.toString();
         // }
-        let data = (code != null) ? code.toString() : "unknown";
-        logger.appendLine(`Closing server: ${data}`);
+        // let data = (code != null) ? code.toString() : "unknown";
+        logger.appendLine("Closing server");
     });
 
     child.stdout.on('data', data => {
-        let response = data.toString();
+        let response = data != null ? data.toString() : "";
         logger.appendLine(`Server output: ${response}`)
         process.stdout.write(data);
     });
