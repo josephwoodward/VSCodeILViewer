@@ -46,7 +46,14 @@ namespace IlViewer.Core
                 PortableExecutableReference ref2 = MetadataReference.CreateFromStream(stream);
 
                 var syntaxTree2 = workspaceCompilation.SyntaxTrees.Where(x => x.FilePath.Contains(classFilename));
-                var syntaxTree = workspaceCompilation.SyntaxTrees.FirstOrDefault(x => x.FilePath.Contains("/" + classFilename + ".cs"));
+                var trees = workspaceCompilation.SyntaxTrees.ToList();
+
+                var allTrees = trees.Where(x => x.FilePath.Contains(classFilename + ".cs")).ToList();
+                //TODO: optimise this
+                
+                var syntaxTree = allTrees.FirstOrDefault(x => x.FilePath.Contains("\\" + classFilename + ".cs"));
+                if (syntaxTree == null)
+                    syntaxTree = allTrees.FirstOrDefault(x => x.FilePath.Contains("/" + classFilename + ".cs"));
 
                 var sourceCode = syntaxTree.GetText().ToString();
 
