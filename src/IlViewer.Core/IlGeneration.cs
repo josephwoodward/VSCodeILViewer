@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using IlViewer.Core.ResultOutput;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;

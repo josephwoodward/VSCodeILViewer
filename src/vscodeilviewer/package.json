@@ -28,6 +28,7 @@
 	},
     "homepage": "https://github.com/JosephWoodward/VSCodeILViewer/blob/master/README.md",
     "activationEvents": [
+        "onCommand:extension.showIlWindow",
         "onLanguage:csharp",
         "workspaceContains:project.json"
     ],

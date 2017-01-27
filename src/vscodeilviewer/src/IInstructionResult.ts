@@ -10,6 +10,6 @@ interface ICompilationError {
 
 interface IInspectionResult {
      ilResults : IInstructionResult[]
-     compilationErrors : any
+     compilationErrors : ICompilationError[]
      hasErrors : boolean;
 }

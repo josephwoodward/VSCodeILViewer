@@ -3,17 +3,27 @@ using Microsoft.AspNetCore.Mvc;
 using IlViewer.Core;
 using IlViewer.Core.ResultOutput;
 using IlViewer.WebApi.Models;
+using Microsoft.Extensions.Logging;
 
 namespace IlViewer.WebApi.Controllers
 {
 	[Route("api/il")]
 	public class IlViewerController : Controller
 	{
+	    private readonly LoggerFactory _loggerFactory;
+	    private ILogger<IlViewerController> _logger;
+
 		[HttpPost]
 		public InspectionResult Post([FromBody] IlRequest request)
 		{
+		    /*_logger = _loggerFactory.CreateLogger<IlViewerController>();*/
 		    Console.WriteLine($"Request Params: ProjectFilePath {request.ProjectFilePath}");
 		    Console.WriteLine($"Request Params: Filename: {request.Filename}");
+		    /*using (_logger.BeginScope("Request received"))
+		    {
+		        _logger.LogInformation("ProjectFilePath: " + request.ProjectFilePath);
+		        _logger.LogInformation("Filename: " + request.Filename);
+		    }*/
 
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));

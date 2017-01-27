@@ -59,14 +59,14 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
 
         private renderPage(body: IInspectionResult) : string {
             let output = "";
-            if (body.hasErrors){
+            if (body.hasErrors && body.compilationErrors.length > 0) {
                 output += "<p>Unable to extract IL for the following reason(s):</p>";
                 output += "<ol>";
                 body.compilationErrors.forEach(function(value : ICompilationError, index: number){
                     output += "<li style=\"margin-bottom: 10px;\">" + value.message + "</li>";
                 });
                 output += "</ol>";
-            } else {
+            } else if (body.ilResults.length > 0) {
                 body.ilResults.forEach(function(value: IInstructionResult, index: number){
                     output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
                 });
