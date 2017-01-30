@@ -2,6 +2,8 @@
 
 IL (Intermediate Language) Viewer for Visual Studio Code allows you to rapidly inspect the IL output of any given C# file.
 
+You can [download and install the IL Viewer for Visual Studio Code from the Visual Studio Code extension marketplace](https://marketplace.visualstudio.com/items?itemName=josephwoodward.vscodeilviewer).
+
 **How does it work?**  
 Using the power of Roslyn, IL Viewer compiles your chosen file in memory (along with any dependencies it has) and produces an in memory DLL containing the IL. 
 
