@@ -1,4 +1,4 @@
-# IL Viewer for Visual Studio Code
+# Visual Studio Code C# IL (Intermediate Language) Viewer
 
 IL (Intermediate Language) Viewer for Visual Studio Code allows you to rapidly inspect the IL output of any given C# file.
 
