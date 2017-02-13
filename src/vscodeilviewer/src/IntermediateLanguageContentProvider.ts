@@ -1,13 +1,31 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as os from 'os';
-import * as request from 'request';
-import * as findParentDir from 'find-parent-dir';
 
-let parsePath = () => {
+const request = require('request');
+const findParentDir = require('find-parent-dir');
+const findUpGlob = require('find-up-glob');
+
+
+function parsePath() {
     let document = vscode.window.activeTextEditor.document;
     let parsedPath = path.parse(document.fileName);
     return parsedPath;
+}
+
+function getProjectRootDirOfFilePath(filepath) {
+    var projectrootdir = findParentDir.sync(path.dirname(filepath), 'project.json');
+    if (projectrootdir == null) {
+        var csprojfiles = findUpGlob.sync('*.csproj', { cwd: path.dirname(filepath) });
+        if (csprojfiles == null) {
+            return null;
+        }
+
+        //projectrootdir = path.dirname(csprojfiles[0]);
+        projectrootdir = csprojfiles[0];
+    }
+
+    return projectrootdir;
 }
 
 export class IntermediateLanguageContentProvider implements vscode.TextDocumentContentProvider {
@@ -49,12 +67,14 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             const parsedPath = parsePath();
             const filename = parsedPath.name;
 
-            findParentDir(parsedPath.dir, 'project.json', function (err, dir) {
-                if (dir !== null){
-                    requestIntermediateLanguage(parsedPath.name, dir);
-                    return;
-                }
-            })
+            let document = vscode.window.activeTextEditor.document;
+            //let parsedPath = path.parse(document.fileName);
+            var projectFilePath = getProjectRootDirOfFilePath(document.fileName);
+
+            if (projectFilePath !== null) {
+                requestIntermediateLanguage(parsedPath.name, projectFilePath);
+                return;
+            }
         }
 
         private renderPage(body: IInspectionResult) : string {

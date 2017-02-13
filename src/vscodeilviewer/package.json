@@ -61,6 +61,7 @@
     },
     "dependencies": {
         "request": "2.79.0",
-        "find-parent-dir": "0.3.0"
+        "find-parent-dir": "0.3.0",
+        "find-up-glob": "^1.0.0"
     }
 }

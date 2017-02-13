@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         
-        //startServer(fullPath);
+        // startServer(fullPath);
     });
 
     context.subscriptions.push(...disposables);
