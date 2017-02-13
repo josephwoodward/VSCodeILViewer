@@ -16,6 +16,9 @@ namespace IlViewer.WebApi.Controllers
 		[HttpPost]
 		public InspectionResult Post([FromBody] IlRequest request)
 		{
+			if (request == null)
+				throw new ArgumentNullException(nameof(request));
+			
 		    /*_logger = _loggerFactory.CreateLogger<IlViewerController>();*/
 		    Console.WriteLine($"Request Params: ProjectFilePath {request.ProjectFilePath}");
 		    Console.WriteLine($"Request Params: Filename: {request.Filename}");
@@ -25,8 +28,6 @@ namespace IlViewer.WebApi.Controllers
 		        _logger.LogInformation("Filename: " + request.Filename);
 		    }*/
 
-			if (request == null)
-				throw new ArgumentNullException(nameof(request));
 		    try
 		    {
 		        InspectionResult result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
