@@ -123,6 +123,7 @@ namespace IlViewer.Core
             var output = new List<InstructionResult>();
             foreach(var item in result)
             {
+                output.Add(new InstructionResult {Value = item.Key});
                 foreach(var i in item.Value)
                 {
                     Console.WriteLine(i.ToString());
