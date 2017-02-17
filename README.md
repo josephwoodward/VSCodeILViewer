@@ -30,4 +30,4 @@ As this is an early version there will likely be issues. Please feel free to rai
 
 ## Contributions
 
-Contributions of all shapes and sizes are welcome and very much encouraged.
+I would love contributions on IL Viewer and welcome contributions of all shapes and sizes. If you're interested in contributing then please feel free to let me know if you need any help getting started.
