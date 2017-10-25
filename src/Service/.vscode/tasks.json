@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/src/IlViewer.WebApi/project.json"
+                "${workspaceRoot}/IlViewer.WebApi/IlViewer.WebApi.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"

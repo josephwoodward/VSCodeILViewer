@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as request from 'request';
 import * as findParentDir from 'find-parent-dir';
+import * as findUpGlob from 'find-up-glob';
 
 let parsePath = () => {
     let document = vscode.window.activeTextEditor.document;
@@ -26,13 +27,11 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
         public provideTextDocumentContent(uri: vscode.Uri) : string {
 
             if (!this._response){
-                this.findProjectJson((projectJson, filename) => {
-                    return this.requstIl(projectJson, filename);
-                })
-                
-                return `
-                <p>Inspecting IL, hold onto your seat belts!<p>
-                <p>If this is your first inspection then it may take a moment longer.</p>`;
+                this.locateCsProjFile((csproj, filename) => {
+                    return this.requestIl(csproj, filename);
+                });
+
+                return '<p>Inspecting IL, please wait a moment...<p>';
             }
 
             let output = this.renderPage(this._response);
@@ -45,16 +44,12 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             return this._onDidChange.event;
         }
 
-        private findProjectJson(requestIntermediateLanguage){
+        private locateCsProjFile(sendToServerFunc){
             const parsedPath = parsePath();
-            const filename = parsedPath.name;
-
-            findParentDir(parsedPath.dir, 'project.json', function (err, dir) {
-                if (dir !== null){
-                    requestIntermediateLanguage(parsedPath.name, dir);
-                    return;
-                }
-            })
+            var projectFile = findUpGlob.sync('*.csproj', { cwd: parsedPath.dir });
+            let filename = parsedPath.name;
+            sendToServerFunc(filename, projectFile[0]);
+            return;
         }
 
         private renderPage(body: IInspectionResult) : string {
@@ -88,11 +83,11 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             </body>`;
         }
 
-        public requstIl(filename: string, projectJsonPath : string) {
+        public requestIl(filename: string, csProjFile : string) {
 
             let postData = {
-                ProjectFilePath : projectJsonPath,
-                Filename : filename
+                ProjectFilePath : csProjFile,
+                Filename : filename + ".cs"
             }
 
             let options = {

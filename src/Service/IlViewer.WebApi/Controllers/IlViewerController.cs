@@ -1,13 +1,13 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+using System;
 using IlViewer.Core;
 using IlViewer.Core.ResultOutput;
 using IlViewer.WebApi.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace IlViewer.WebApi.Controllers
 {
-	[Route("api/il")]
+    [Route("api/il")]
 	public class IlViewerController : Controller
 	{
 	    private readonly LoggerFactory _loggerFactory;

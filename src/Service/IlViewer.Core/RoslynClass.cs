@@ -13,7 +13,7 @@ namespace IlViewer.Core
             var ilInstructions = new Dictionary<string, Collection<Instruction>>();
             var typeDefinitions = assembly.MainModule.GetTypes().ToList();
 
-            TypeDefinition typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
+            TypeDefinition typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName.Replace(".cs", "") && x.IsClass) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
             if (typeDefinition != null)
             {
                 foreach (var method in typeDefinition.Methods)
