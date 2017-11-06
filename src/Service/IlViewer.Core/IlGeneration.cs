@@ -22,7 +22,9 @@ namespace IlViewer.Core
             if (string.IsNullOrEmpty(classFilename))
                throw new ArgumentNullException(nameof(classFilename));
 
+            
             var compilation = WorkspaceManager.LoadWorkspace(projectPath);
+            
             var inspectionResult = new InspectionResult();
             using (var stream = new MemoryStream())
             {

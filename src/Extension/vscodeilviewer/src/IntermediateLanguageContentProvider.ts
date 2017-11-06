@@ -5,7 +5,7 @@ import * as request from 'request';
 import * as findParentDir from 'find-parent-dir';
 import * as findUpGlob from 'find-up-glob';
 
-let parsePath = () => {
+let parsePath = () => {        
     let document = vscode.window.activeTextEditor.document;
     let parsedPath = path.parse(document.fileName);
     return parsedPath;

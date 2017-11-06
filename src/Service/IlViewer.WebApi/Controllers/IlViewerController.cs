@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using IlViewer.Core;
 using IlViewer.Core.ResultOutput;
 using IlViewer.WebApi.Models;
@@ -30,7 +31,11 @@ namespace IlViewer.WebApi.Controllers
 
 		    try
 		    {
+			    var timer = new Stopwatch();
+			    timer.Start();
 		        InspectionResult result = IlGeneration.ExtractIl(request.ProjectFilePath, request.Filename);
+			    timer.Stop();
+			    Console.WriteLine("Total time: " + timer.ElapsedMilliseconds);
 		        return result;
 		    }
 		    catch (Exception e)
