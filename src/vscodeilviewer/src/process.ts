@@ -1,6 +1,6 @@
 import * as child from 'child_process';
 import * as SpawnOptions from 'child_process';
-import { Logger } from './logger';
+import { Logger } from './Logger';
 
 export namespace DecompilerProcess {
 

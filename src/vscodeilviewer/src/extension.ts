@@ -2,7 +2,7 @@
 
 import { IntermediateLanguageContentProvider } from './IntermediateLanguageContentProvider';
 import { DecompilerProcess } from './process';
-import { Logger } from './logger';
+import { Logger } from './Logger';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';

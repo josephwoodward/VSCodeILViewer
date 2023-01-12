@@ -9,7 +9,7 @@
             "command": "dotnet",
             "args": [
                 "build",
-                "${workspaceRoot}/src/IlViewer.WebApi/project.json"
+                "${workspaceRoot}/src/IlViewer.WebApi"
             ],
             "problemMatcher": "$msCompile",
             "group": {

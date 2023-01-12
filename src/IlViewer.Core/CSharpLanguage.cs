@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CSharp.RuntimeBinder;
+using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
 namespace IlViewer.Core
 {
@@ -21,9 +22,6 @@ namespace IlViewer.Core
             MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ValueTuple<>).GetTypeInfo().Assembly.Location)
         };
-
-        
-        private readonly IReadOnlyDictionary<string, string> _features;
 
         public CSharpLanguage()
         {
