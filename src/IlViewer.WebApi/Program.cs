@@ -13,7 +13,7 @@ namespace IlViewer.WebApi
         public static void Main(string[] args)
         {
 	        var builder = WebApplication.CreateBuilder(args);
-           http://localhost:65530builder.Services.AddControllers();
+            builder.Services.AddControllers();
 
             var app = builder.Build();
             app.UseHsts();
