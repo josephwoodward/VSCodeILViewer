@@ -13,7 +13,7 @@ namespace IlViewer.Core
             var ilInstructions = new Dictionary<string, Collection<Instruction>>();
             var typeDefinitions = assembly.MainModule.GetTypes().ToList();
 
-            TypeDefinition typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
+            var typeDefinition = typeDefinitions.FirstOrDefault(x => x.Name == typeName) ?? typeDefinitions.FirstOrDefault(x => x.Name.Contains(typeName) && x.HasGenericParameters);
             if (typeDefinition != null)
             {
                 foreach (var method in typeDefinition.Methods)
@@ -39,8 +39,7 @@ namespace IlViewer.Core
             }
             else
             {
-                ModuleDefinition module = assembly.MainModule;
-
+                var module = assembly.MainModule;
                 var ilProcessor = module?.EntryPoint?.Body?.GetILProcessor();
                 if (ilProcessor != null)
                 {

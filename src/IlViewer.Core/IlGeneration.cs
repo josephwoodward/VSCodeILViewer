@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using IlViewer.Core.ResultOutput;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -13,20 +15,64 @@ namespace IlViewer.Core
 {
     public static class IlGeneration
     {
-        public static InspectionResult ExtractIl(string projectJsonPath, string classFilename)
+        public static InspectionResult ExtractIl(string projectPath, string classFileName)
         {
-            if (string.IsNullOrEmpty(projectJsonPath))
-                throw new ArgumentNullException(nameof(projectJsonPath));
+            if (string.IsNullOrEmpty(projectPath)) 
+            {
+                throw new ArgumentNullException(nameof(projectPath));
+            }
+            
+            if (string.IsNullOrEmpty(classFileName))
+            {
+                throw new ArgumentNullException(nameof(classFileName));
+            }
 
-            if (string.IsNullOrEmpty(classFilename))
-               throw new ArgumentNullException(nameof(classFilename));
+            var d = new DirectoryInfo(projectPath); 
+            var fileToCompile = d.EnumerateFiles("*.cs", SearchOption.AllDirectories)
+                                 .Select(a => a.FullName)
+                                 .FirstOrDefault(f => f.Contains(classFileName));                
+            var dllFiles = d.EnumerateFiles("*.dll", SearchOption.AllDirectories)
+                            .Select(f => f.FullName).ToArray();
+            var references = new List<PortableExecutableReference>();
+            foreach (var dllFile in dllFiles)
+            {
+                var newRef = MetadataReference.CreateFromFile(dllFile);
+                references.Add(newRef);
+            }
 
-            Compilation workspaceCompilation = WorkspaceManager.LoadWorkspace(projectJsonPath);
+            var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Private.CoreLib.dll")));
+            var code = File.ReadAllText(fileToCompile);
+            var tree = CSharpSyntaxTree.ParseText(code);
+            var compilation = CSharpCompilation.Create("new").AddSyntaxTrees(tree);
+            var usings = compilation.SyntaxTrees.Select(tree => tree.GetRoot().ChildNodes().OfType<UsingDirectiveSyntax>()).SelectMany(s => s).ToArray();
+            foreach (var u in usings)
+            {
+                try
+                {
+
+                    references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, u.Name.ToString() + ".dll")));
+                }
+                catch
+                {
+                    // ToDo log not absent .dll for usings
+                }
+            }
+            
+            //ToDo support global usings
+            var sysRef = MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.dll"));
+            references.Add(sysRef);
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.IO.dll")));
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Linq.dll")));
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Net.Http.dll")));
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Threading.dll")));
+            references.Add(MetadataReference.CreateFromFile(Path.Combine(assemblyPath, "System.Threading.Tasks.dll")));
+            var finalCompilation = compilation.AddReferences(references);
 
             var inspectionResult = new InspectionResult();
-            using (var stream = new MemoryStream())
+            using (var assemblyStream = new MemoryStream())
             {
-                var compilationResult = workspaceCompilation.Emit(stream);
+                var compilationResult = finalCompilation.Emit(assemblyStream);
                 if (!compilationResult.Success)
                 {
                     var errors = compilationResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
@@ -36,89 +82,28 @@ namespace IlViewer.Core
                         Console.WriteLine(error.ToString());
                     }
 
-                    if (inspectionResult.HasErrors)
-                        return inspectionResult;
+                    if (inspectionResult.HasErrors) return inspectionResult;
                 }
 
-                stream.Seek(0, SeekOrigin.Begin);
-
-                //AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(stream);
-                PortableExecutableReference ref2 = MetadataReference.CreateFromStream(stream);
-
-                var syntaxTree2 = workspaceCompilation.SyntaxTrees.Where(x => x.FilePath.Contains(classFilename));
-                var trees = workspaceCompilation.SyntaxTrees.ToList();
-
-                var allTrees = trees.Where(x => x.FilePath.Contains(classFilename + ".cs")).ToList();
-                //TODO: optimise this
-                
-                var syntaxTree = allTrees.FirstOrDefault(x => x.FilePath.Contains("\\" + classFilename + ".cs"));
-                if (syntaxTree == null)
-                    syntaxTree = allTrees.FirstOrDefault(x => x.FilePath.Contains("/" + classFilename + ".cs"));
-
-                var sourceCode = syntaxTree.GetText().ToString();
-
-                var metadataReferences = workspaceCompilation.References.ToList();
-                var res3 = ref2.GetMetadata();
-                metadataReferences.Add(ref2);
-
-                InspectionResult finalResult = CompileInMemory(sourceCode, metadataReferences, classFilename, inspectionResult);
+                assemblyStream.Seek(0, SeekOrigin.Begin);
+                InspectionResult finalResult = new InspectionResult { IlResults = GenerateIlFromStream (assemblyStream, classFileName) };
                 return finalResult;
             }
-        }
-
-        private static InspectionResult CompileInMemory(string sourceCode, IEnumerable<MetadataReference> metadataReferences, string classFilename, InspectionResult inspectionResult)
-        {
-            var sourceLanguage = new CSharpLanguage();
-            var syntaxTree = sourceLanguage.ParseText(sourceCode, SourceCodeKind.Regular);
-
-	        var stream = new MemoryStream();
-	        Compilation compilation = sourceLanguage
-	            .CreateLibraryCompilation("ExampleAssembly", false)
-	            .AddReferences(metadataReferences)
-                .AddReferences()
-	            .AddSyntaxTrees(syntaxTree);
-
-            var emitResult = compilation.Emit(stream);
-			if (!emitResult.Success)
-			{
-			    var errors = emitResult.Diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error);
-			    foreach (var error in errors)
-				{
-				    inspectionResult.AddError(error.GetMessage());
-				    Console.WriteLine(error.ToString());
-				}
-
-			    if (inspectionResult.HasErrors)
-			        return inspectionResult;
-			}
-            
-            stream.Seek(0, SeekOrigin.Begin);
-
-            //var resultWriter = new StringWriter();
-            //var decompiler = new ILDecompiler();
-            //decompiler.Decompile(stream, resultWriter);
-
-            var ilResult = GenerateIlFromStream(stream, classFilename);
-            inspectionResult.IlResults = ilResult;
-
-            return inspectionResult;
         }
 
         private static IList<InstructionResult> GenerateIlFromStream(Stream stream, string typeFullName)
         {
             var assembly = AssemblyDefinition.ReadAssembly(stream);
-
-            Dictionary<string, Collection<Instruction>> result;
+            var result = new Dictionary<string, Collection<Instruction>>();
             try
             {
-                 result = RoslynClass.GetiLInstructionsFromAssembly(assembly, typeFullName);
+                result = RoslynClass.GetiLInstructionsFromAssembly(assembly, typeFullName);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
-
 
             var output = new List<InstructionResult>();
             foreach(var item in result)
