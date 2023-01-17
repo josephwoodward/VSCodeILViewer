@@ -34,12 +34,12 @@ export async function activate(context: vscode.ExtensionContext) {
             {}
 		);
 
-
-        panel.onDidDispose(
-            () => {
-                deactivate();
-            }
-        );
+        
+        // panel.onDidDispose(
+        //     () => {
+        //         deactivate();
+        //     }
+        // );
         
         let provider = new IntermediateLanguageContentProvider(panel);
         provider.provideTextDocumentContent();
