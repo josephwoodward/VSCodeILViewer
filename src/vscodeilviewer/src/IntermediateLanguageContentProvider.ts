@@ -24,29 +24,16 @@ export class IntermediateLanguageContentProvider {
         // Implementation
         public provideTextDocumentContent() : void {
 
-            if (!this._response){
-                this.findProjectJson((projectJson, filename) => {
-                    this.requstIl(projectJson, filename);
-                })
-                
-                this._panel.webview.html = `
-                <p>Inspecting IL, hold onto your seat belts!<p>
-                <p>If this is your first inspection then it may take a moment longer.</p>`;
-            }
-
-            this.renderIlPage();
+            this._panel.webview.html = `
+            <p>Inspecting IL, hold onto your seat belts!<p>
+            <p>If this is your first inspection then it may take a moment longer.</p>`;
+            this.requstIl();
         }
 
         // get onDidChange(): vscode.Event<vscode.Uri> {
         //     return this._onDidChange.event;
         // }
 
-        private findProjectJson(requestIntermediateLanguage){
-            const parsedPath = parsePath();
-            const filename = parsedPath.name;
-            const dir = parsedPath.dir;
-            requestIntermediateLanguage(filename, dir);
-        }
 
         private renderIlPage() : void {
             let output = "";
@@ -57,7 +44,7 @@ export class IntermediateLanguageContentProvider {
                     output += "<li style=\"margin-bottom: 10px;\">" + value.message + "</li>";
                 });
                 output += "</ol>";
-            } else if (this._response.ilResults.length > 0) {
+            } else if (this._response.ilResults?.length > 0) {
                 this._response.ilResults.forEach(function(value: IInstructionResult, index: number){
                     output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
                 });
@@ -79,10 +66,13 @@ export class IntermediateLanguageContentProvider {
             </body>`;
         }
 
-        public requstIl(filename: string, projectJsonPath : string) {
+        public requstIl() {
+            const parsedPath = parsePath();
+            const filename = parsedPath.name;
+            const projectPath = parsedPath.dir;
 
             let postData = {
-                ProjectFilePath : projectJsonPath,
+                ProjectFilePath : projectPath,
                 Filename : filename
             }
 
@@ -97,13 +87,11 @@ export class IntermediateLanguageContentProvider {
                 if (!error && response.statusCode == 200) {
                     this._response = body;
                     this.renderIlPage();
-                    //this._onDidChange.fire(this._previewUri);
+
                 } else if (!error && response.statusCode == 500) {
-                    // Something went wrong!
-                    this._response = `
+                    this._panel.webview.html = `
                     <p>Uh oh, something went wrong.</p>
                     <p>${body}</p>`;
-                    //this._onDidChange.fire(this._previewUri);
                 }
             });
         }

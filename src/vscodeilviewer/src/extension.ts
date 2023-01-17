@@ -12,9 +12,20 @@ import * as os from 'os';
 let child : child_process.ChildProcess;
 let logger = new Logger(message => console.log(message), "Info");
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     logger.append("Executing activate");
 
+    const fullPath = path.join(vscode.extensions.getExtension("josephwoodward.vscodeilviewer").extensionPath) + "/server/ilViewer.WebApi.dll";
+    fs.exists(fullPath, function(exists){
+        if (!exists){
+            logger.appendLine(`Unable to start server, can't find path at ${fullPath}`);
+            vscode.window.showErrorMessage("Unable to start IL Viewer server, check developer console");
+            return;
+        }
+    });
+
+    await startServer(fullPath);
+    
     vscode.commands.registerCommand('extension.showIlWindow', () => {
         const panel = vscode.window.createWebviewPanel(
 			'iLViewer',
@@ -23,16 +34,12 @@ export function activate(context: vscode.ExtensionContext) {
             {}
 		);
 
-        const fullPath = path.join(vscode.extensions.getExtension("josephwoodward.vscodeilviewer").extensionPath) + "/server/ilViewer.WebApi.dll";
-        fs.exists(fullPath, function(exists){
-            if (!exists){
-                logger.appendLine(`Unable to start server, can't find path at ${fullPath}`);
-                vscode.window.showErrorMessage("Unable to start IL Viewer server, check developer console");
-                return;
+
+        panel.onDidDispose(
+            () => {
+                deactivate();
             }
-            
-            startServer(fullPath);
-        });
+        );
         
         let provider = new IntermediateLanguageContentProvider(panel);
         provider.provideTextDocumentContent();
