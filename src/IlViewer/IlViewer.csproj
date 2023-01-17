@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <DebugType>portable</DebugType>
+    <AssemblyName>ilViewer.Console</AssemblyName>
+    <PackageId>IlViewer</PackageId>
+  </PropertyGroup>
+
+</Project>

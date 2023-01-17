@@ -2,7 +2,7 @@
 
 import { IntermediateLanguageContentProvider } from './IntermediateLanguageContentProvider';
 import { DecompilerProcess } from './process';
-import { Logger } from './logger';
+import { Logger } from './Logger';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
@@ -10,25 +10,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 let child : child_process.ChildProcess;
-let ilWindowUri = vscode.Uri.parse(`il-viewer://authority/${IntermediateLanguageContentProvider.Scheme}`);
 let logger = new Logger(message => console.log(message), "Info");
 
-const disposables: vscode.Disposable[] = [];
-
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
     logger.append("Executing activate");
-
-    let invokationDisposable = vscode.commands.registerCommand('extension.showIlWindow', () => {
-        return vscode.commands.executeCommand('vscode.previewHtml', ilWindowUri, vscode.ViewColumn.Two, 'IL Viewer').then((success) => {
-        }, (reason) => {
-            vscode.window.showErrorMessage("There's been an error: " + reason);
-        });
-    });
-    disposables.push(invokationDisposable);
-
-    let provider = new IntermediateLanguageContentProvider(ilWindowUri);
-    let providerDisposable = vscode.workspace.registerTextDocumentContentProvider(IntermediateLanguageContentProvider.Scheme, provider);
-    disposables.push(providerDisposable);
 
     const fullPath = path.join(vscode.extensions.getExtension("josephwoodward.vscodeilviewer").extensionPath) + "/server/ilViewer.WebApi.dll";
     fs.exists(fullPath, function(exists){
@@ -37,11 +22,30 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage("Unable to start IL Viewer server, check developer console");
             return;
         }
-        
-        //startServer(fullPath);
     });
 
-    context.subscriptions.push(...disposables);
+    await startServer(fullPath);
+    
+    vscode.commands.registerCommand('extension.showIlWindow', () => {
+        const panel = vscode.window.createWebviewPanel(
+			'iLViewer',
+			'IL Viewer',
+			vscode.ViewColumn.Two,
+            {}
+		);
+
+        
+        // panel.onDidDispose(
+        //     () => {
+        //         deactivate();
+        //     }
+        // );
+        
+        let provider = new IntermediateLanguageContentProvider(panel);
+        provider.provideTextDocumentContent();
+    });
+
+
 }
 
 export function deactivate() {
@@ -50,7 +54,7 @@ export function deactivate() {
 
 export function startServer(path: string){
 
-    child = DecompilerProcess.spawn(path, [ ], logger);
+    child = DecompilerProcess.spawn(path, [ "StartServer" ], logger);
     child.on('error', data => {
         logger.appendLine("Error starting server");
         console.log(`Child error`);

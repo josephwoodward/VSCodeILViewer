@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace IlViewer.WebApi
 {
@@ -10,20 +12,17 @@ namespace IlViewer.WebApi
     {
         public static void Main(string[] args)
         {
-	        //Console.WriteLine("Arg" + args[1]);
-            var config = new ConfigurationBuilder()
-                //.AddCommandLine(Environment.GetCommandLineArgs().Skip(1).ToArray())
-                .Build();
-            
-	        var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseUrls("http://localhost:65530")
-	            .Build();
+	        var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddControllers();
 
-            host.Run();
+            var app = builder.Build();
+            app.UseHsts();
+            app.Urls.Add("http://localhost:65530");
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.MapControllers();
+            app.Run();
         }
     }
 }

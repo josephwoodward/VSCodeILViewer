@@ -10,69 +10,47 @@ let parsePath = () => {
     return parsedPath;
 }
 
-export class IntermediateLanguageContentProvider implements vscode.TextDocumentContentProvider {
+export class IntermediateLanguageContentProvider {
 
         public static Scheme = 'il-viewer';
 
         private _response;
-        private _previewUri;
-        private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
+        private _panel;
 
-        constructor(previewUri : vscode.Uri,) {
-            this._previewUri = previewUri;
+        constructor(panel: vscode.WebviewPanel) {
+            this._panel = panel;
         }
 
         // Implementation
-        public provideTextDocumentContent(uri: vscode.Uri) : string {
+        public provideTextDocumentContent() : void {
 
-            if (!this._response){
-                this.findProjectJson((projectJson, filename) => {
-                    return this.requstIl(projectJson, filename);
-                })
-                
-                return `
-                <p>Inspecting IL, hold onto your seat belts!<p>
-                <p>If this is your first inspection then it may take a moment longer.</p>`;
-            }
-
-            let output = this.renderPage(this._response);
-            this._response = null;
-
-            return output;
+            this._panel.webview.html = `
+            <p>Inspecting IL, hold onto your seat belts!<p>
+            <p>If this is your first inspection then it may take a moment longer.</p>`;
+            this.requstIl();
         }
 
-        get onDidChange(): vscode.Event<vscode.Uri> {
-            return this._onDidChange.event;
-        }
+        // get onDidChange(): vscode.Event<vscode.Uri> {
+        //     return this._onDidChange.event;
+        // }
 
-        private findProjectJson(requestIntermediateLanguage){
-            const parsedPath = parsePath();
-            const filename = parsedPath.name;
 
-            findParentDir(parsedPath.dir, 'project.json', function (err, dir) {
-                if (dir !== null){
-                    requestIntermediateLanguage(parsedPath.name, dir);
-                    return;
-                }
-            })
-        }
-
-        private renderPage(body: IInspectionResult) : string {
+        private renderIlPage() : void {
             let output = "";
-            if (body.hasErrors && body.compilationErrors.length > 0) {
+            if (this._response.hasErrors && this._response.compilationErrors.length > 0) {
                 output += "<p>Unable to extract IL for the following reason(s):</p>";
                 output += "<ol>";
-                body.compilationErrors.forEach(function(value : ICompilationError, index: number){
+                this._response.compilationErrors.forEach(function(value : ICompilationError, index: number){
                     output += "<li style=\"margin-bottom: 10px;\">" + value.message + "</li>";
                 });
                 output += "</ol>";
-            } else if (body.ilResults.length > 0) {
-                body.ilResults.forEach(function(value: IInstructionResult, index: number){
+            } else if (this._response.ilResults?.length > 0) {
+                this._response.ilResults.forEach(function(value: IInstructionResult, index: number){
                     output += "<div style=\"font-size: 14px\"><pre>" + value.value + "</pre></div>";
                 });
             }
 
-            return `
+            this._panel.webview.html = `
             <style type="text/css">
                 .outOfDateBanner {
                     display: table;
@@ -88,10 +66,13 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             </body>`;
         }
 
-        public requstIl(filename: string, projectJsonPath : string) {
+        public requstIl() {
+            const parsedPath = parsePath();
+            const filename = parsedPath.name;
+            const projectPath = parsedPath.dir;
 
             let postData = {
-                ProjectFilePath : projectJsonPath,
+                ProjectFilePath : projectPath,
                 Filename : filename
             }
 
@@ -105,13 +86,12 @@ export class IntermediateLanguageContentProvider implements vscode.TextDocumentC
             request(options, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     this._response = body;
-                    this._onDidChange.fire(this._previewUri);
+                    this.renderIlPage();
+
                 } else if (!error && response.statusCode == 500) {
-                    // Something went wrong!
-                    this._response = `
+                    this._panel.webview.html = `
                     <p>Uh oh, something went wrong.</p>
                     <p>${body}</p>`;
-                    this._onDidChange.fire(this._previewUri);
                 }
             });
         }

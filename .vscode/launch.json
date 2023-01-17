@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceRoot}/src/IlViewer.WebApi/bin/Debug/netcoreapp1.0/IlViewer.WebApi.dll",
+            "program": "${workspaceRoot}/src/IlViewer.WebApi/bin/Debug/net6.0/ilViewer.WebApi.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "stopAtEntry": false,

@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using IlViewer.Core;
 using IlViewer.Core.ResultOutput;
 using IlViewer.WebApi.Models;
-using Microsoft.Extensions.Logging;
+//sing Microsoft.Extensions.Logging;
 
 namespace IlViewer.WebApi.Controllers
 {
 	[Route("api/il")]
 	public class IlViewerController : Controller
 	{
-	    private readonly LoggerFactory _loggerFactory;
-	    private ILogger<IlViewerController> _logger;
+	    // private readonly LoggerFactory _loggerFactory;
+	    //private ILogger<IlViewerController> _logger;
 
 		[HttpPost]
 		public InspectionResult Post([FromBody] IlRequest request)
@@ -41,7 +41,7 @@ namespace IlViewer.WebApi.Controllers
 		}
 
 		[HttpGet]
-		public string Ping()
+		public string Get()
 		{
 			return "pong";
 		}
